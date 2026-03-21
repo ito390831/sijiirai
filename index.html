@@ -374,18 +374,20 @@
 // ============================================================
 function parseQR(raw) {
     if (!raw || raw.length < 57) return null;
-    const dateRaw    = raw.substring(5,  13);
-    const slipNo     = raw.substring(15, 22).trim();
-    const hinbanRaw  = raw.substring(29, 39);
-    const std        = parseInt(raw.substring(41, 47)) || 0;
-    const hakoshu    = raw.substring(47, 52).trim();
-    const total      = parseInt(raw.substring(52, 57)) || 0;
-    const fraction   = std > 0 ? total % std : total;
+    const dateRaw   = raw.substring(5,  13);
+    const slipNo    = raw.substring(15, 22).trim();
+    const hinbanRaw = raw.substring(29, 39);
+    const std       = parseInt(raw.substring(41, 47)) || 0;
+    const hakoshu   = raw.substring(47, 52).trim();
+    const total     = parseInt(raw.substring(52, 57)) || 0;
+    // 整数箱・端数を分離
+    const fullBoxes = (std > 0) ? Math.floor(total / std) : 0;
+    const fraction  = (std > 0) ? total % std : total;
     let delivDate = '';
     if (/^\d{8}$/.test(dateRaw)) {
         delivDate = parseInt(dateRaw.slice(4,6)) + '月' + parseInt(dateRaw.slice(6,8)) + '日';
     }
-    return { hinbanRaw, slipNo, delivDate, std, total, fraction, hakoshu };
+    return { hinbanRaw, slipNo, delivDate, std, total, fullBoxes, fraction, hakoshu };
 }
 
 // ============================================================
@@ -417,15 +419,23 @@ function updateUI() {
 //  スマホ用プレビューカードを生成
 // ============================================================
 function addCard(item) {
-    const { parsed, sid } = item;
+    const { parsed, sid, slipTypes } = item;
     const p1 = parsed.hinbanRaw.substring(0,5);
     const p2 = parsed.hinbanRaw.substring(5);
+    // 発行する伝票の説明バッジ
+    const badges = slipTypes.map(t => {
+        if (t.type === 'full')
+            return `<span class="badge badge-full">${parsed.std}個×${t.boxes}箱</span>`;
+        else
+            return `<span class="badge badge-frac">${t.qty}個×1箱（端数）</span>`;
+    }).join(' ');
+
     const card = document.createElement('div');
     card.className = 'slip-card';
     card.id = 'card-' + sid;
     card.innerHTML = `
         <div class="slip-card-header">
-            <span class="slip-card-title">📄 指示品依頼書 #${items.indexOf(item)+1}</span>
+            <span class="slip-card-title">📄 ${p1}-${p2}　${slipTypes.length}枚発行</span>
             <button class="slip-card-del" onclick="removeItem('${sid}')">✕ 削除</button>
         </div>
         <div class="slip-card-body">
@@ -434,8 +444,12 @@ function addCard(item) {
                 <span class="slip-card-val slip-card-hinban">${p1}-${p2}</span>
             </div>
             <div class="slip-card-row">
-                <span class="slip-card-lbl">端数数量</span>
-                <span class="slip-card-val big">${parsed.fraction} 個</span>
+                <span class="slip-card-lbl">発行内容</span>
+                <span class="slip-card-val" style="font-size:11px;">${badges}</span>
+            </div>
+            <div class="slip-card-row">
+                <span class="slip-card-lbl">合計数量</span>
+                <span class="slip-card-val big">${parsed.total} 個</span>
             </div>
             <div class="slip-card-row">
                 <span class="slip-card-lbl">顧客納入日</span>
@@ -448,10 +462,6 @@ function addCard(item) {
             <div class="slip-card-row">
                 <span class="slip-card-lbl">箱種</span>
                 <span class="slip-card-val">${parsed.hakoshu || '―'}</span>
-            </div>
-            <div class="slip-card-row">
-                <span class="slip-card-lbl">収容数</span>
-                <span class="slip-card-val">${parsed.std}</span>
             </div>
             <div class="slip-card-row">
                 <span class="slip-card-lbl">発行日</span>
@@ -488,11 +498,15 @@ function toggleChk(el) {
     el.textContent = el.classList.contains('on') ? '✓' : '○';
 }
 
-function buildSlipHTML(parsed, sid) {
+// qty: 1箱あたりの個数, boxes: 箱数, slipLabel: 伝票種別ラベル
+function buildSlipHTML(parsed, sid, qty, boxes, slipLabel) {
     const { chk1, val, chk2, chk3 } = buildHinban(parsed.hinbanRaw, sid);
+    const labelBadge = slipLabel
+        ? `<span style="font-size:5pt;background:#1a4a8a;color:#fff;padding:1px 4px;border-radius:2px;margin-left:4px;">${slipLabel}</span>`
+        : '';
     return `
-    <div class="slip">
-        <div class="s-title">指 示 品 依 頼 書</div>
+    <div class="slip" data-sid="${sid}">
+        <div class="s-title">指 示 品 依 頼 書${labelBadge}</div>
         <div class="s-main">
             <div class="s-body">
                 <div class="hinban-area">
@@ -513,10 +527,10 @@ function buildSlipHTML(parsed, sid) {
                 <div class="qty-row">
                     <div class="row-lbl">数量</div>
                     <div class="qty-inner">
-                        <span class="qty-num">${parsed.fraction}</span>
+                        <span class="qty-num">${qty}</span>
                         <span class="qty-unit">個</span>
                         <span class="qty-x">×</span>
-                        <span class="qty-num" style="min-width:10mm;"></span>
+                        <span class="qty-num">${boxes}</span>
                         <span class="qty-unit">箱</span>
                     </div>
                     <div class="stamp-wrap">
@@ -570,42 +584,67 @@ function processQRData(raw) {
         setStatus('⚠️ QRデータの形式が正しくありません', 'error');
         return false;
     }
-    if (parsed.fraction === 0) {
-        const p1 = parsed.hinbanRaw.substring(0,5);
-        const p2 = parsed.hinbanRaw.substring(5);
-        setStatus(`ℹ️ ${p1}-${p2} は端数なし（スキップ）`, 'info');
-        return true; // スキャン自体は成功
-    }
-    const sid = 's' + (sidCnt++);
-    const item = { parsed, sid };
-    items.push(item);
-
-    // プレビューカード追加
-    addCard(item);
-
-    // 印刷用伝票追加
-    const printWrap = document.getElementById('printWrap');
-    printWrap.insertAdjacentHTML('beforeend', buildSlipHTML(parsed, sid));
 
     const p1 = parsed.hinbanRaw.substring(0,5);
     const p2 = parsed.hinbanRaw.substring(5);
-    setStatus(`✅ ${p1}-${p2} 追加（端数 ${parsed.fraction}個）　計${items.length}枚`, 'ok');
+
+    // 発行する伝票の種類を決定
+    // slipTypes = [{type:'full', qty:200, boxes:2}, {type:'frac', qty:50, boxes:1}]
+    const slipTypes = [];
+    if (parsed.fullBoxes > 0) {
+        slipTypes.push({ type: 'full', qty: parsed.std,      boxes: parsed.fullBoxes, label: '整数箱' });
+    }
+    if (parsed.fraction > 0) {
+        slipTypes.push({ type: 'frac', qty: parsed.fraction, boxes: 1,                label: '端数箱' });
+    }
+    if (slipTypes.length === 0) {
+        setStatus(`⚠️ ${p1}-${p2} は数量0のためスキップ`, 'info');
+        return true;
+    }
+
+    const sid = 's' + (sidCnt++);
+    // 伝票が1種類だけならラベル不要、2種類ならラベル付き
+    const needLabel = slipTypes.length > 1;
+    const item = { parsed, sid, slipTypes };
+    items.push(item);
+
+    // プレビューカード追加（1グループ = 1カード）
+    addCard(item);
+
+    // 印刷用伝票追加（種類ごとに1枚）
+    const printWrap = document.getElementById('printWrap');
+    slipTypes.forEach((t, i) => {
+        const slipSid = sid + '_' + i;
+        const label = needLabel ? t.label : '';
+        printWrap.insertAdjacentHTML('beforeend', buildSlipHTML(parsed, slipSid, t.qty, t.boxes, label));
+    });
+
+    const totalSlips = document.querySelectorAll('.slip').length;
+    const desc = slipTypes.map(t => t.type==='full'
+        ? `${t.qty}個×${t.boxes}箱`
+        : `端数${t.qty}個`).join('＋');
+    setStatus(`✅ ${p1}-${p2}（${desc}）追加　印刷${totalSlips}枚`, 'ok');
     updateUI();
     return true;
 }
 
 function removeItem(sid) {
     items = items.filter(it => it.sid !== sid);
-    // カード削除
+    // プレビューカード削除
     const card = document.getElementById('card-' + sid);
     if (card) card.remove();
-    // 印刷用伝票削除（data-sid属性で識別）
+    // 印刷用伝票削除（sid_0, sid_1 など前方一致で全削除）
     const printWrap = document.getElementById('printWrap');
-    const slips = printWrap.querySelectorAll('.slip');
-    slips.forEach(s => { if(s.dataset.sid === sid) s.remove(); });
+    printWrap.querySelectorAll('.slip').forEach(s => {
+        const dsid = s.getAttribute('data-sid') || '';
+        if (dsid === sid || dsid.startsWith(sid + '_')) s.remove();
+    });
     updateUI();
     if (items.length === 0) setStatus('📷 QRスキャンボタンを押してください');
-    else setStatus(`伝票 ${items.length}枚`, 'ok');
+    else {
+        const totalSlips = document.querySelectorAll('.slip').length;
+        setStatus(`伝票グループ ${items.length}件　印刷${totalSlips}枚`, 'ok');
+    }
 }
 
 function clearAll() {

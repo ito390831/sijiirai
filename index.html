@@ -374,20 +374,23 @@
 // ============================================================
 function parseQR(raw) {
     if (!raw || raw.length < 57) return null;
-    const dateRaw   = raw.substring(5,  13);
-    const slipNo    = raw.substring(15, 22).trim();
-    const hinbanRaw = raw.substring(29, 39);
-    const std       = parseInt(raw.substring(41, 47)) || 0;
-    const hakoshu   = raw.substring(47, 52).trim();
-    const total     = parseInt(raw.substring(52, 57)) || 0;
+    const dateRaw   = raw.substring(5,  13);   // 6-13桁:  納入日
+    const slipNo    = raw.substring(15, 22).trim(); // 16-22桁: 納品書No.
+    const hinbanRaw = raw.substring(29, 39);   // 30-39桁: 品番
+    const total     = parseInt(raw.substring(41, 47)) || 0; // 42-47桁: 総納入数
+    const hakoshu   = raw.substring(47, 52).trim(); // 48-52桁: 箱種
+    const std       = parseInt(raw.substring(52, 57)) || 0; // 53-57桁: 収容数(1箱あたり)
+    const qrBoxes   = parseInt(raw.substring(59, 60)) || 0; // 60桁:    箱数
+
     // 整数箱・端数を分離
     const fullBoxes = (std > 0) ? Math.floor(total / std) : 0;
     const fraction  = (std > 0) ? total % std : total;
+
     let delivDate = '';
     if (/^\d{8}$/.test(dateRaw)) {
         delivDate = parseInt(dateRaw.slice(4,6)) + '月' + parseInt(dateRaw.slice(6,8)) + '日';
     }
-    return { hinbanRaw, slipNo, delivDate, std, total, fullBoxes, fraction, hakoshu };
+    return { hinbanRaw, slipNo, delivDate, std, total, fullBoxes, fraction, hakoshu, qrBoxes };
 }
 
 // ============================================================
@@ -658,7 +661,8 @@ function clearAll() {
 //  カメラスキャン（html5-qrcode）
 // ============================================================
 let qrScanner = null;
-let lastScanTime = 0;
+let lastScanText = '';   // 直前に読み取ったQRテキスト
+let lastScanTime = 0;    // 直前の読み取り時刻
 
 async function openScanner() {
     document.getElementById('scanModal').classList.add('show');
@@ -671,12 +675,15 @@ async function openScanner() {
             { fps: 15, qrbox: { width: 240, height: 240 } },
             (text) => {
                 const now = Date.now();
-                if (now - lastScanTime < 2000) return; // 2秒以内の重複防止
+                // 【同一QRコード】は3秒以内の重複読み取りを防止
+                // 【異なるQRコード】は即時受付（連続スキャン対応）
+                if (text === lastScanText && now - lastScanTime < 3000) return;
+                lastScanText = text;
                 lastScanTime = now;
                 playBeep();
                 const ok = processQRData(text);
                 if (ok) {
-                    document.getElementById('scanStatusText').textContent = '✅ 読み取り完了！続けてスキャンできます';
+                    document.getElementById('scanStatusText').textContent = '✅ 読み取り完了！次のQRをかざしてください';
                     // フラッシュ演出
                     document.getElementById('qrReaderWrap').style.background = '#fff';
                     setTimeout(()=>{ document.getElementById('qrReaderWrap').style.background = ''; }, 150);

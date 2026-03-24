@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a4a8a">
-<title>指示品依頼書</title>
+<title>指示品依頼書システム</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -72,208 +72,72 @@ body{font-family:"MS UI Gothic","Meiryo","Yu Gothic",sans-serif;background:#eef1
 .scan-footer{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0));background:rgba(0,0,0,0.6);text-align:center;}
 #scanStatusText{color:#fff;font-size:13px;}
 
-/* ===== 印刷エリア（画面では非表示） ===== */
+/* ===== 印刷エリア（通常時は非表示） ===== */
 #printArea{display:none;}
 
 /* ============================================================
-   印刷CSS ― Excelフォームに完全一致
-   ページ: A4縦, 2列×2行＝4枚/ページ
-
-   Excelフォーム 行高さ(pt→mm×0.3528):
-     行1-6:  13.5pt × 6 = 28.8mm  (タイトル B1:O6結合)
-     行7:    19.5pt     =  6.9mm  (区切り行)
-     行8:    21.0pt     =  7.4mm  (品番ラベル+かんばん注記+○)
-     行9:    36.75pt    = 13.0mm  (品番値)
-     行10:   21.0pt     =  7.4mm  (品番○見本準備)
-     行11:   21.0pt     =  7.4mm  (品番○次工程)
-     行12:   39.0pt     = 13.8mm  (依頼日 / 備考欄)
-     行13:   15.0pt     =  5.3mm  (数量ラベル上 / 捺印ヘッダー)
-     行14:   27.75pt    =  9.8mm  (数量値)
-     行15:   39.0pt     = 13.8mm  (出荷日/便)
-     行16:   39.0pt     = 13.8mm  (箱種)
-     行17-19:13.5+13.5+14.25 = 14.6mm (フッター)
-     合計: 142.0mm
-
-   Excelフォーム 列幅（B-R列）:
-     B=29.5mm(ラベル), C=1.0mm(区切), D=9.8mm(品番桁),
-     E-N=各9.8mm(品番桁×10桁), O=29.5mm(注記), 
-     P=16.4mm(備考), Q-R=各9.8mm(捺印)
-     ※品番: D(1桁)E(2)F(3)G(4)H(5) ハイフン I J(6)K(7)L(8)M(9)N(10)
+   印刷用CSS
 ============================================================ */
 @media print {
   @page{size:A4 portrait;margin:5mm 4mm;}
-  .ui-panel,.scan-modal,#mainContent{display:none!important;}
-  body{background:white;}
-  #printArea{display:block!important;width:202mm;}
+  /* 不要なUIを全て消す */
+  .ui-panel, .scan-modal, #mainContent { display: none !important; }
+  
+  /* 印刷エリアを表示 */
+  body { background: white; margin: 0; padding: 0; }
+  #printArea { display: block !important; width: 100%; }
 
-  /* 2列グリッド */
-  .print-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2mm;width:100%;}
-  .slip:nth-child(2n){page-break-after:always;}
-  .slip:last-child{page-break-after:auto;}
-
-  /* ===== 伝票外枠 ===== */
-  .slip{
-    width:100%;
-    border-left:2px solid #000;border-right:2px solid #000;
-    border-top:2px solid #000;border-bottom:2px solid #000;
-    font-family:"MS UI Gothic","Meiryo",sans-serif;
-    page-break-inside:avoid;break-inside:avoid;
-    overflow:hidden;
-  }
-
-  /* ===== 行1-6: タイトル (高さ28.8mm) ===== */
-  .f-title{
-    height:28.8mm;
-    border-bottom:1px solid #000;
-    display:flex;align-items:center;
-    padding:0 5mm;
-    font-size:20pt;letter-spacing:5px;
+  .print-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; width: 100%; }
+  
+  /* 伝票の基本構造 */
+  .slip {
+    width: 100%;
+    border: 2px solid #000;
+    font-family: "MS UI Gothic", "Meiryo", sans-serif;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: hidden;
+    margin-bottom: 2mm;
   }
 
-  /* ===== 行7: 区切り行 (高さ6.9mm) ===== */
-  .f-sep{height:6.9mm;border-bottom:1px solid #000;}
-
-  /* ===== 品番エリア (行8-11) ===== */
-  .f-hinban{display:flex;border-bottom:2px solid #000;}
-
-  /* 「品番」ラベル: B列幅相当, 行8-11結合 */
-  .f-hinban-lbl{
-    width:12mm;min-width:12mm;
-    border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:12pt;
-    writing-mode:vertical-rl;text-orientation:upright;
-    letter-spacing:5px;
-  }
-
-  .f-hinban-body{flex:1;display:flex;flex-direction:column;}
-
-  /* 行8上部: かんばん確認注記 (高さ7.4mm) */
-  .f-note-row{
-    height:7.4mm;border-bottom:1px solid #000;
-    display:flex;align-items:center;
-    font-size:7pt;padding:0 2mm;
-  }
-
-  /* 行9: 品番値 (高さ13.0mm) */
-  .f-hinban-vals{height:13.0mm;display:flex;border-bottom:1px solid #000;}
-  .f-hv-cell{
-    flex:1;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:15pt;font-weight:bold;
-  }
-  .f-hv-cell:last-child{border-right:none;}
-  .f-hv-sep{
-    flex:0 0 5mm;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:12pt;font-weight:bold;
-  }
-
-  /* 行10: 見本準備確認○ (高さ7.4mm) */
-  /* 行11: 次工程確認○   (高さ7.4mm) */
-  .f-chk-row{height:7.4mm;display:flex;border-bottom:1px solid #000;}
-  .f-chk-row.last{border-bottom:none;}
-  .f-ck-cell{
-    flex:1;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:10pt;
-  }
-  .f-ck-cell:last-child{border-right:none;}
-  .f-ck-cell.on{color:#c00;font-weight:bold;}
-  .f-ck-sep{flex:0 0 5mm;border-right:1px solid #000;}
-
-  /* ===== 行12: 依頼日 + 備考欄 (高さ13.8mm) ===== */
-  .f-irai{height:13.8mm;display:flex;border-bottom:1px solid #000;}
-  .f-row-lbl{
-    width:12mm;min-width:12mm;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:10pt;
-    writing-mode:vertical-rl;text-orientation:upright;letter-spacing:2px;
-  }
-  .f-irai-val{
-    flex:1;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:12pt;font-weight:bold;
-  }
-  /* 備考欄: P-R列(16.4+9.8+9.8=36mm), 行12-16結合 */
-  .f-biko{
-    width:36mm;min-width:36mm;
-    padding:1mm 2mm;font-size:6.5pt;
-    display:flex;flex-direction:column;justify-content:flex-start;
-  }
-  .f-biko-ttl{font-size:7.5pt;font-weight:bold;margin-bottom:1mm;}
-  .f-biko-line{margin-bottom:1mm;}
-  .f-biko-line b{font-weight:bold;}
-
-  /* ===== 行13-14: 数量 (計15.1mm) ===== */
-  .f-qty{display:flex;border-bottom:1px solid #000;}
-  .f-qty-lbl{
-    width:12mm;min-width:12mm;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:10pt;
-    writing-mode:vertical-rl;text-orientation:upright;letter-spacing:2px;
-  }
-  .f-qty-body{
-    flex:1;border-right:1px solid #000;
-    display:flex;flex-direction:column;
-  }
-  /* 行13: ヘッダー部 5.3mm */
-  .f-qty-hdr{height:5.3mm;border-bottom:1px solid #000;}
-  /* 行14: 数量値 9.8mm */
-  .f-qty-val{
-    height:9.8mm;
-    display:flex;align-items:center;padding:0 2mm;gap:1mm;
-  }
-  .f-qty-num{font-size:18pt;font-weight:bold;text-decoration:underline;min-width:14mm;text-align:center;}
-  .f-qty-unit{font-size:10pt;}
-  .f-qty-x{font-size:13pt;margin:0 1mm;}
-  .f-qty-box{font-size:18pt;font-weight:bold;min-width:10mm;text-align:center;}
-  /* 捺印欄 3列 */
-  .f-stamp-cols{display:flex;}
-  .f-stamp-col{
-    width:10mm;min-width:10mm;border-left:1px solid #000;
-    display:flex;flex-direction:column;
-  }
-  .f-stamp-hdr{
-    height:5.3mm;border-bottom:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:5pt;text-align:center;line-height:1.1;
-    background:#f5f5f5;
-  }
-  .f-stamp-sp{height:9.8mm;}
-
-  /* ===== 行15: 出荷日/便 (高さ13.8mm) ===== */
-  .f-shukka{height:13.8mm;display:flex;border-bottom:1px solid #000;}
-  .f-shukka-lbl{
-    width:12mm;min-width:12mm;border-right:1px solid #000;
-    display:flex;align-items:center;justify-content:center;
-    font-size:7.5pt;
-    writing-mode:vertical-rl;text-orientation:upright;letter-spacing:0;
-  }
-  .f-shukka-val{
-    flex:1;display:flex;align-items:center;justify-content:center;
-    font-size:10pt;
-  }
-
-  /* ===== 行16: 箱種 (高さ13.8mm) ===== */
-  .f-hakoshu{height:13.8mm;display:flex;border-bottom:1px solid #000;}
-  .f-hakoshu-val{
-    flex:1;display:flex;align-items:center;
-    padding:0 3mm;font-size:12pt;font-weight:bold;
-  }
-
-  /* ===== 行17-19: フッター (高さ14.6mm) ===== */
-  .f-footer{
-    height:14.6mm;
-    display:flex;align-items:center;justify-content:center;
-    font-size:9pt;font-weight:bold;text-align:center;padding:0 2mm;
-  }
+  .f-title { height: 28.8mm; border-bottom: 1px solid #000; display: flex; align-items: center; padding: 0 5mm; font-size: 20pt; letter-spacing: 5px; }
+  .f-sep { height: 6.9mm; border-bottom: 1px solid #000; }
+  .f-hinban { display: flex; border-bottom: 2px solid #000; }
+  .f-hinban-lbl { width: 12mm; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 12pt; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 5px; }
+  .f-hinban-body { flex: 1; display: flex; flex-direction: column; }
+  .f-note-row { height: 7.4mm; border-bottom: 1px solid #000; display: flex; align-items: center; font-size: 7pt; padding: 0 2mm; }
+  .f-hinban-vals { height: 13.0mm; display: flex; border-bottom: 1px solid #000; }
+  .f-hv-cell { flex: 1; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 15pt; font-weight: bold; }
+  .f-hv-cell:last-child { border-right: none; }
+  .f-hv-sep { flex: 0 0 5mm; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 12pt; font-weight: bold; }
+  .f-chk-row { height: 7.4mm; display: flex; border-bottom: 1px solid #000; }
+  .f-chk-row.last { border-bottom: none; }
+  .f-ck-cell { flex: 1; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 10pt; }
+  .f-ck-cell.on { color: #c00; font-weight: bold; }
+  .f-ck-sep { flex: 0 0 5mm; border-right: 1px solid #000; }
+  .f-irai { height: 13.8mm; display: flex; border-bottom: 1px solid #000; }
+  .f-row-lbl { width: 12mm; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 10pt; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; }
+  .f-irai-val { flex: 1; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 12pt; font-weight: bold; }
+  .f-biko { width: 36mm; padding: 1mm 2mm; font-size: 6.5pt; display: flex; flex-direction: column; }
+  .f-biko-ttl { font-size: 7.5pt; font-weight: bold; }
+  .f-qty { display: flex; border-bottom: 1px solid #000; }
+  .f-qty-lbl { width: 12mm; border-right: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 10pt; writing-mode: vertical-rl; text-orientation: upright; }
+  .f-qty-body { flex: 1; border-right: 1px solid #000; display: flex; flex-direction: column; }
+  .f-qty-hdr { height: 5.3mm; border-bottom: 1px solid #000; }
+  .f-qty-val { height: 9.8mm; display: flex; align-items: center; padding: 0 2mm; gap: 1mm; }
+  .f-qty-num { font-size: 18pt; font-weight: bold; text-decoration: underline; min-width: 14mm; text-align: center; }
+  .f-stamp-cols { display: flex; }
+  .f-stamp-col { width: 10mm; border-left: 1px solid #000; }
+  .f-stamp-hdr { height: 5.3mm; border-bottom: 1px solid #000; font-size: 5pt; text-align: center; background: #f5f5f5; }
+  .f-stamp-sp { height: 9.8mm; }
+  .f-shukka { height: 13.8mm; display: flex; border-bottom: 1px solid #000; }
+  .f-hakoshu { height: 13.8mm; display: flex; border-bottom: 1px solid #000; }
+  .f-footer { height: 14.6mm; display: flex; align-items: center; justify-content: center; font-size: 9pt; font-weight: bold; padding: 0 2mm; }
 }
 </style>
 </head>
 <body>
 
-<!-- ===== 操作パネル ===== -->
 <div class="ui-panel">
   <div class="panel-title"><span>📦</span> 指示品依頼書システム</div>
   <div class="panel-btns">
@@ -284,7 +148,6 @@ body{font-family:"MS UI Gothic","Meiryo","Yu Gothic",sans-serif;background:#eef1
   <div class="panel-status"><span id="status">📷 QRスキャンボタンを押してください</span></div>
 </div>
 
-<!-- ===== メインコンテンツ ===== -->
 <div id="mainContent">
   <div class="empty-guide" id="emptyGuide">
     <div class="icon">📋</div>
@@ -293,12 +156,12 @@ body{font-family:"MS UI Gothic","Meiryo","Yu Gothic",sans-serif;background:#eef1
     <p style="font-size:12px;color:#999;margin-top:8px;">連続スキャン対応 ／ 整数箱＋端数箱 自動分割</p>
   </div>
   <div id="slipList"></div>
-  <div id="printArea">
-    <div class="print-wrap" id="printWrap"></div>
-  </div>
 </div>
 
-<!-- ===== カメラスキャン ===== -->
+<div id="printArea">
+  <div class="print-wrap" id="printWrap"></div>
+</div>
+
 <div class="scan-modal" id="scanModal">
   <div class="scan-header">
     <h2>📷 QRコードをかざしてください</h2>
@@ -341,7 +204,6 @@ function updateUI(){
   if(!has)setStatus('📷 QRスキャンボタンを押してください');
 }
 
-/* スマホ プレビューカード */
 function addCard(item){
   const{parsed,sid,slipTypes}=item;
   const p1=parsed.hinbanRaw.substring(0,5),p2=parsed.hinbanRaw.substring(5);
@@ -359,20 +221,10 @@ function addCard(item){
     </div>
     <div class="slip-card-body">
       <div class="slip-card-row"><span class="slip-card-lbl">品番</span><span class="slip-card-val slip-card-hinban">${p1}-${p2}</span></div>
-      <div class="slip-card-row"><span class="slip-card-lbl">発行内容</span><span class="slip-card-val" style="font-size:11px;">${badges}</span></div>
       <div class="slip-card-row"><span class="slip-card-lbl">合計数量</span><span class="slip-card-val big">${parsed.total} 個</span></div>
-      <div class="slip-card-row"><span class="slip-card-lbl">顧客納入日</span><span class="slip-card-val">${parsed.delivDate||'―'}</span></div>
-      <div class="slip-card-row"><span class="slip-card-lbl">納品書番号</span><span class="slip-card-val">${parsed.slipNo||'―'}</span></div>
-      <div class="slip-card-row"><span class="slip-card-lbl">箱種</span><span class="slip-card-val">${parsed.hakoshu||'―'}</span></div>
-      <div class="slip-card-row"><span class="slip-card-lbl">発行日</span><span class="slip-card-val">${todayStr}</span></div>
+      <div class="slip-card-row"><span class="slip-card-lbl">内容</span><span class="slip-card-val">${badges}</span></div>
     </div>`;
   document.getElementById('slipList').appendChild(card);
-}
-
-/* 印刷用伝票HTML — Excelフォーム完全一致 */
-function toggleChk(el){
-  el.classList.toggle('on');
-  el.textContent=el.classList.contains('on')?'✓':'○';
 }
 
 function buildSlipHTML(parsed,sid,qty,boxes,label){
@@ -381,195 +233,131 @@ function buildSlipHTML(parsed,sid,qty,boxes,label){
   const p2=h.substring(5,10).split('');while(p2.length<5)p2.push('');
   const title=label?`指示品依頼書【${label}】`:'指示品依頼書';
 
-  // 品番値行 (行9): D-H(前半5桁) + ハイフンI + J-N(後半5桁)
   const hvRow=[
     ...p1.map(c=>`<div class="f-hv-cell">${c}</div>`),
     `<div class="f-hv-sep">―</div>`,
     ...p2.map(c=>`<div class="f-hv-cell">${c}</div>`),
   ].join('');
 
-  // ○チェック行
-  function chkRow(rid){
+  function chkRow(){
     return[
-      ...p1.map((_,i)=>`<div class="f-ck-cell" onclick="toggleChk(this)" data-id="${sid}-${rid}-${i}">○</div>`),
+      ...p1.map(()=>`<div class="f-ck-cell">○</div>`),
       `<div class="f-ck-sep"></div>`,
-      ...p2.map((_,i)=>`<div class="f-ck-cell" onclick="toggleChk(this)" data-id="${sid}-${rid}-${5+i}">○</div>`),
+      ...p2.map(()=>`<div class="f-ck-cell">○</div>`),
     ].join('');
   }
 
   return`<div class="slip" data-sid="${sid}">
-
-  <!-- 行1-6: タイトル -->
-  <div class="f-title">${title}</div>
-
-  <!-- 行7: 区切り -->
-  <div class="f-sep"></div>
-
-  <!-- 行8-11: 品番エリア -->
-  <div class="f-hinban">
-    <div class="f-hinban-lbl">品番</div>
-    <div class="f-hinban-body">
-      <div class="f-note-row">←かんばんから転記時に確認。</div>
-      <div class="f-hinban-vals">${hvRow}</div>
-      <div class="f-chk-row">${chkRow('r2')}<span style="font-size:6pt;padding:0 1mm;white-space:nowrap;align-self:center;">←見本準備時に作業者が確認。</span></div>
-      <div class="f-chk-row last">${chkRow('r3')}<span style="font-size:6pt;padding:0 1mm;white-space:nowrap;align-self:center;">←次工程へ渡し時に監督者が確認。</span></div>
-    </div>
-  </div>
-
-  <!-- 行12: 依頼日＋備考 -->
-  <div class="f-irai">
-    <div class="f-row-lbl">依頼日</div>
-    <div class="f-irai-val">${todayStr}</div>
-    <div class="f-biko">
-      <div class="f-biko-ttl">＜備考欄＞</div>
-      <div class="f-biko-line">・顧客納入日：<b>${parsed.delivDate||'　月　日'}</b></div>
-      <div class="f-biko-line">・納品書番号：<b>${parsed.slipNo||''}</b></div>
-    </div>
-  </div>
-
-  <!-- 行13-14: 数量 -->
-  <div class="f-qty">
-    <div class="f-qty-lbl">数量</div>
-    <div class="f-qty-body">
-      <div class="f-qty-hdr"></div>
-      <div class="f-qty-val">
-        <span class="f-qty-num">${qty}</span>
-        <span class="f-qty-unit">個</span>
-        <span class="f-qty-x">×</span>
-        <span class="f-qty-box">${boxes}</span>
-        <span class="f-qty-unit">箱</span>
+    <div class="f-title">${title}</div>
+    <div class="f-sep"></div>
+    <div class="f-hinban">
+      <div class="f-hinban-lbl">品番</div>
+      <div class="f-hinban-body">
+        <div class="f-note-row">←かんばんから転記時に確認。</div>
+        <div class="f-hinban-vals">${hvRow}</div>
+        <div class="f-chk-row">${chkRow()}</div>
+        <div class="f-chk-row last">${chkRow()}</div>
       </div>
     </div>
-    <div class="f-stamp-cols">
-      <div class="f-stamp-col"><div class="f-stamp-hdr">数量<br>ﾁｪｯｸ</div><div class="f-stamp-sp"></div></div>
-      <div class="f-stamp-col"><div class="f-stamp-hdr">作業者</div><div class="f-stamp-sp"></div></div>
-      <div class="f-stamp-col"><div class="f-stamp-hdr">監督者</div><div class="f-stamp-sp"></div></div>
+    <div class="f-irai">
+      <div class="f-row-lbl">依頼日</div>
+      <div class="f-irai-val">${todayStr}</div>
+      <div class="f-biko">
+        <div class="f-biko-ttl">＜備考欄＞</div>
+        <div>・顧客納入日：<b>${parsed.delivDate||'　月　日'}</b></div>
+        <div>・納品書番号：<b>${parsed.slipNo||''}</b></div>
+      </div>
     </div>
-  </div>
-
-  <!-- 行15: 出荷日/便 -->
-  <div class="f-shukka">
-    <div class="f-row-lbl f-shukka-lbl">出荷日/便</div>
-    <div class="f-shukka-val">　月　　日　　:　　まで　　森町便　　フタバ便</div>
-  </div>
-
-  <!-- 行16: 箱種 -->
-  <div class="f-hakoshu">
-    <div class="f-row-lbl">箱種</div>
-    <div class="f-hakoshu-val">${parsed.hakoshu||''}</div>
-  </div>
-
-  <!-- 行17-19: フッター -->
-  <div class="f-footer">受付者はこの依頼書を製品に付けて依頼者へ渡して下さい</div>
-
-</div>`;
+    <div class="f-qty">
+      <div class="f-qty-lbl">数量</div>
+      <div class="f-qty-body">
+        <div class="f-qty-hdr"></div>
+        <div class="f-qty-val">
+          <span class="f-qty-num">${qty}</span><span style="font-size:10pt">個</span>
+          <span style="font-size:13pt;margin:0 2mm">×</span>
+          <span class="f-qty-num">${boxes}</span><span style="font-size:10pt">箱</span>
+        </div>
+      </div>
+      <div class="f-stamp-cols">
+        <div class="f-stamp-col"><div class="f-stamp-hdr">数量</div><div class="f-stamp-sp"></div></div>
+        <div class="f-stamp-col"><div class="f-stamp-hdr">作業者</div><div class="f-stamp-sp"></div></div>
+        <div class="f-stamp-col"><div class="f-stamp-hdr">監督者</div><div class="f-stamp-sp"></div></div>
+      </div>
+    </div>
+    <div class="f-shukka">
+      <div class="f-row-lbl">出荷日/便</div>
+      <div style="flex:1;display:flex;align-items:center;padding-left:5mm">　月　日　　:　　まで</div>
+    </div>
+    <div class="f-hakoshu">
+      <div class="f-row-lbl">箱種</div>
+      <div style="flex:1;display:flex;align-items:center;padding-left:5mm;font-weight:bold">${parsed.hakoshu||''}</div>
+    </div>
+    <div class="f-footer">受付者はこの依頼書を製品に付けて依頼者へ渡して下さい</div>
+  </div>`;
 }
 
-/* データ追加・削除 */
 function processQRData(raw){
   const parsed=parseQR(raw);
-  if(!parsed){setStatus('⚠️ QRデータの形式が正しくありません','error');return false;}
-  const p1=parsed.hinbanRaw.substring(0,5),p2=parsed.hinbanRaw.substring(5);
+  if(!parsed){setStatus('⚠️ QR形式エラー','error');return false;}
   const slipTypes=[];
   if(parsed.fullBoxes>0)slipTypes.push({type:'full',qty:parsed.std,boxes:parsed.fullBoxes,label:'整数箱'});
   if(parsed.fraction>0) slipTypes.push({type:'frac',qty:parsed.fraction,boxes:1,label:'端数箱'});
-  if(slipTypes.length===0){setStatus(`⚠️ ${p1}-${p2} 数量0のためスキップ`,'info');return true;}
-  const sid='s'+(sidCnt++),needLabel=slipTypes.length>1;
-  const item={parsed,sid,slipTypes};
-  items.push(item);
-  addCard(item);
+  
+  const sid='s'+(sidCnt++);
+  items.push({parsed,sid,slipTypes});
+  addCard({parsed,sid,slipTypes});
+  
   const pw=document.getElementById('printWrap');
   slipTypes.forEach((t,i)=>{
-    pw.insertAdjacentHTML('beforeend',buildSlipHTML(parsed,sid+'_'+i,t.qty,t.boxes,needLabel?t.label:''));
+    pw.insertAdjacentHTML('beforeend',buildSlipHTML(parsed,sid+'_'+i,t.qty,t.boxes,slipTypes.length>1?t.label:''));
   });
-  const total=document.querySelectorAll('.slip').length;
-  const desc=slipTypes.map(t=>t.type==='full'?`${t.qty}個×${t.boxes}箱`:`端数${t.qty}個`).join('＋');
-  setStatus(`✅ ${p1}-${p2}（${desc}）追加　印刷${total}枚`,'ok');
-  updateUI();return true;
+  
+  setStatus(`✅ 追加完了（現在 ${items.length}件）`,'ok');
+  updateUI();
+  return true;
 }
 
 function removeItem(sid){
   items=items.filter(it=>it.sid!==sid);
-  const card=document.getElementById('card-'+sid);
-  if(card)card.remove();
-  document.querySelectorAll('.slip').forEach(s=>{
-    const ds=s.getAttribute('data-sid')||'';
-    if(ds===sid||ds.startsWith(sid+'_'))s.remove();
-  });
+  document.getElementById('card-'+sid)?.remove();
+  document.querySelectorAll(`.slip[data-sid^="${sid}"]`).forEach(s=>s.remove());
   updateUI();
-  const total=document.querySelectorAll('.slip').length;
-  if(items.length===0)setStatus('📷 QRスキャンボタンを押してください');
-  else setStatus(`伝票グループ${items.length}件　印刷${total}枚`,'ok');
 }
 
 function clearAll(){
   items=[];
   document.getElementById('slipList').innerHTML='';
   document.getElementById('printWrap').innerHTML='';
-  document.getElementById('printBtn').style.display='none';
   updateUI();
 }
 
-/* カメラスキャン */
-let qrScanner=null,lastScanText='',lastScanTime=0;
-
+/* スキャナー制御 */
+let qrScanner=null;
 async function openScanner(){
   document.getElementById('scanModal').classList.add('show');
-  document.getElementById('scanStatusText').textContent='カメラ起動中...';
   try{
     qrScanner=new Html5Qrcode('qrReader');
-    await qrScanner.start(
-      {facingMode:'environment'},
-      {fps:15,qrbox:{width:240,height:240}},
-      (text)=>{
-        const now=Date.now();
-        if(text===lastScanText&&now-lastScanTime<3000)return;
-        lastScanText=text;lastScanTime=now;
-        playBeep();
-        const ok=processQRData(text);
-        if(ok){
-          document.getElementById('scanStatusText').textContent='✅ 読み取り完了！次のQRをかざしてください';
-          document.getElementById('qrReaderWrap').style.background='#fff';
-          setTimeout(()=>{document.getElementById('qrReaderWrap').style.background='';},150);
-        }
-      },
-      ()=>{}
-    );
-    document.getElementById('scanStatusText').textContent='QRコードをかざしてください';
-  }catch(err){
-    let msg='カメラエラー: '+err.message;
-    if(location.protocol==='file:')msg='⚠️ ローカルファイルではカメラ使用不可。httpsで開いてください。';
-    document.getElementById('scanStatusText').textContent=msg;
-  }
+    await qrScanner.start({facingMode:'environment'},{fps:15,qrbox:240},(text)=>{
+      playBeep();
+      processQRData(text);
+    },()=>{});
+  }catch(e){alert('カメラを起動できませんでした');}
 }
 
 function closeScanner(){
-  if(qrScanner){
-    qrScanner.stop().catch(()=>{}).finally(()=>{
-      qrScanner.clear();qrScanner=null;
-      document.getElementById('qrReader').innerHTML='';
-    });
-  }
+  if(qrScanner){qrScanner.stop().finally(()=>{qrScanner.clear();qrScanner=null;});}
   document.getElementById('scanModal').classList.remove('show');
 }
 
 function playBeep(){
   try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx.createOscillator(),gain=ctx.createGain();
-    osc.connect(gain);gain.connect(ctx.destination);
-    osc.frequency.value=1000;
-    gain.gain.setValueAtTime(0.3,ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
-    osc.start();osc.stop(ctx.currentTime+0.15);
+    const ctx=new AudioContext();
+    const osc=ctx.createOscillator();
+    osc.connect(ctx.destination);
+    osc.frequency.value=800;
+    osc.start();osc.stop(ctx.currentTime+0.1);
   }catch(e){}
 }
-
-let touchStartY=0;
-document.getElementById('scanModal').addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;});
-document.getElementById('scanModal').addEventListener('touchend',e=>{
-  if(e.changedTouches[0].clientY-touchStartY>80)closeScanner();
-});
 
 updateUI();
 </script>

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>指示品依頼書システム【RICOH版】</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-height: 100vh; }
+
+/* ===== アプリUI ===== */
+#app { max-width: 480px; margin: 0 auto; padding: 16px; }
+.app-title {
+  color: #e0e0e0; font-size: 18px; font-weight: bold;
+  text-align: center; padding: 12px 0 16px; letter-spacing: 0.05em;
+}
+.btn-scan-main {
+  width: 100%; padding: 18px;
+  background: linear-gradient(135deg, #0f3460, #16213e);
+  color: #7dd3fc; font-size: 16px; font-weight: bold;
+  border: 2px solid #0ea5e9; border-radius: 12px;
+  cursor: pointer; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-scan-main.scanning {
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border-color: #10b981; color: #6ee7b7;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.4); }
+  50%      { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+}
+#status {
+  text-align: center; color: #94a3b8; font-size: 13px;
+  min-height: 20px; margin-bottom: 12px;
+}
+.slip-card {
+  background: #16213e; border: 1px solid #0f3460;
+  border-radius: 8px; padding: 10px 14px;
+  margin-bottom: 8px; color: #cbd5e1; font-size: 13px;
+  display: flex; align-items: center; gap: 10px;
+}
+.slip-card-badge {
+  background: #0ea5e9; color: #fff;
+  font-size: 11px; padding: 2px 7px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.slip-card-badge.frac { background: #f59e0b; }
+.slip-card-partno { font-weight: bold; color: #e2e8f0; font-size: 14px; }
+.slip-card-qty { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; }
+.btn-pdf {
+  flex: 1; padding: 14px;
+  background: #dc2626; color: #fff;
+  font-size: 15px; font-weight: bold;
+  border: none; border-radius: 10px; cursor: pointer;
+}
+.btn-clear {
+  padding: 14px 20px; background: #334155; color: #94a3b8;
+  font-size: 13px; border: none; border-radius: 10px; cursor: pointer;
+}
+
+/* ===== カメラオーバーレイ ===== */
+#scanner-overlay {
+  display: none; position: fixed; inset: 0;
+  background: #000; z-index: 100; flex-direction: column;
+}
+#scanner-overlay.active { display: flex; }
+#video { width: 100%; height: 100%; object-fit: cover; }
+#scan-frame-wrap {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+#scan-frame {
+  width: 260px; height: 260px;
+  border: 3px solid #10b981; border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.55);
+  position: relative;
+}
+#scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  animation: scanline 2s linear infinite;
+}
+@keyframes scanline { 0%{top:0} 100%{top:100%} }
+#scanner-bottom {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,.85));
+  padding: 20px 16px 36px;
+}
+#scan-count { text-align: center; color: #6ee7b7; font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+#scan-last  { text-align: center; color: #94a3b8; font-size: 12px; margin-bottom: 16px; min-height: 16px; }
+.scanner-btn-row { display: flex; gap: 8px; }
+.btn-scan-done {
+  flex: 1; padding: 14px; background: #0ea5e9; color: #fff;
+  font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer;
+}
+.btn-scan-cancel {
+  padding: 14px 20px; background: rgba(255,255,255,.15); color: #fff;
+  font-size: 13px; border: none; border-radius: 10px; cursor: pointer;
+}
+
+/* ===== PDF生成コンテナ ===== */
+#pdf-container { position: fixed; left: -9999px; top: 0; background: #fff; }
+
+/* ===== 伝票スタイル ===== */
+/*
+  目標：写真の実物と同じ横長フォーム
+  A4縦(210×297mm)に2枚配置 → 各伝票幅: 194mm
+*/
+.slip {
+  width: 194mm;
+  border: 2px solid #000;
+  font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif;
+  background: #fff;
+  border-collapse: collapse;
+}
+.slip table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.slip td {
+  border: 1px solid #000;
+  vertical-align: middle;
+  padding: 0;
+}
+
+/* ---- ヘッダー ---- */
+.hdr-title {
+  font-size: 13pt; font-weight: bold;
+  text-align: center; padding: 3mm 1mm;
+  vertical-align: middle;
+  border-right: 2px solid #000;
+}
+.flow-lbl-td {
+  text-align: center; font-size: 6.5pt;
+  height: 6.5mm; border-bottom: 1px solid #000;
+}
+.flow-arrow-td {
+  text-align: center; font-size: 13pt;
+  height: 11mm; color: #444;
+}
+
+/* ---- 品番 ---- */
+.hinban-label-td {
+  width: 10mm;
+  font-size: 8.5pt; font-weight: bold;
+  text-align: center; writing-mode: vertical-rl; letter-spacing: 2px;
+  border-right: 2px solid #000;
+  vertical-align: middle;
+}
+/* 品番内部：チェック行と数字行をtableで揃える */
+.inner-table {
+  width: 100%; border-collapse: collapse; table-layout: auto;
+}
+/* 各桁セル：固定幅 */
+.dc { /* digit cell */
+  width: 7mm; height: 8.5mm;
+  text-align: center; vertical-align: middle;
+  font-size: 10.5pt; font-weight: bold;
+  border: 1px solid #000;
+}
+.ds { /* digit separator */
+  width: 6mm;
+  text-align: center; vertical-align: middle;
+  font-size: 11pt; font-weight: bold;
+  border: none;
+}
+.dn { /* digit note */
+  text-align: left; vertical-align: middle;
+  font-size: 6.5pt; padding-left: 2mm;
+  white-space: nowrap; border: none;
+}
+/* チェック行：○の幅をdigit cellと同じ7mmに合わせる */
+.cc { /* check circle cell */
+  width: 7mm; height: 7mm;
+  text-align: center; vertical-align: middle;
+  border: none;
+}
+.cs { width: 6mm; border: none; } /* check separator spacer */
+.cn { text-align: left; vertical-align: middle; font-size: 6.5pt; padding-left: 2mm; white-space: nowrap; border: none; } /* check note */
+.ck-circle {
+  display: inline-block;
+  width: 4.5mm; height: 4.5mm;
+  border: 1px solid #000; border-radius: 50%;
+}
+/* 品番エリアの各行ボーダー */
+.row-ck1 td { border-bottom: 1px solid #ccc; }
+.row-digit td.dc { border: 1px solid #000; }
+.row-ck2 td { border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
+.row-ck3 td { border-top: none; }
+
+/* ---- 依頼日 ---- */
+.irai-label-td {
+  width: 10mm; font-size: 8pt; font-weight: bold;
+  text-align: center; vertical-align: middle;
+  border-right: 2px solid #000;
+}
+.irai-date-td {
+  font-size: 11pt; text-align: center;
+  vertical-align: middle; height: 10mm;
+  border-right: 1px solid #000;
+}
+.biko-td {
+  width: 52mm; vertical-align: top;
+  padding: 1.5mm 2mm; font-size: 7pt;
+}
+.biko-title { font-weight: bold; font-size: 7.5pt; margin-bottom: 1mm; }
+
+/* ---- 数量 ---- */
+.qty-label-td {
+  width: 10mm; font-size: 8.5pt; font-weight: bold;
+  text-align: center; writing-mode: vertical-rl;
+  border-right: 2px solid #000; vertical-align: middle;
+}
+.qty-body-td {
+  font-size: 12pt; font-weight: bold;
+  text-align: center; vertical-align: middle;
+  height: 15mm; border-right: 1px solid #000;
+}
+.qty-num { text-decoration: underline; }
+/* 捺印エリア */
+.stamp-td { width: 42mm; vertical-align: top; padding: 0; }
+.stamp-lbl-cell {
+  text-align: center; font-size: 6.5pt;
+  height: 7mm; border-bottom: 1px solid #000; vertical-align: middle;
+  padding: 0 0.5mm;
+}
+.stamp-box-cell { height: 10mm; }
+/* 右側備考 */
+.biko-r-td {
+  width: 38mm; vertical-align: top;
+  padding: 1mm 2mm; font-size: 6.5pt; line-height: 1.5;
+}
+
+/* ---- 出荷日/便 ---- */
+.shipday-label-td {
+  width: 10mm; font-size: 7pt; font-weight: bold;
+  text-align: center; border-right: 2px solid #000;
+  vertical-align: middle; line-height: 1.4; padding: 1mm 0;
+}
+.shipday-body-td {
+  font-size: 9pt; vertical-align: middle;
+  height: 9mm; padding: 0 3mm; white-space: nowrap;
+}
+.ul { border-bottom: 1px solid #000; display: inline-block; min-width: 5mm; }
+.futa { text-decoration: underline; }
+
+/* ---- 箱種 ---- */
+.hako-label-td {
+  width: 10mm; font-size: 8.5pt; font-weight: bold;
+  text-align: center; writing-mode: vertical-rl;
+  border-right: 2px solid #000; vertical-align: middle;
+}
+.hako-val-td {
+  width: 18mm; font-size: 10pt; font-weight: bold;
+  text-align: center; vertical-align: middle;
+  border-right: 1px solid #000; padding: 1mm;
+}
+.rekakunin-td { vertical-align: middle; padding: 1.5mm 2mm; }
+.rekakunin-inner {
+  border: 1.5px solid #000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5mm 2mm; gap: 2mm;
+}
+.rekakunin-txt { font-size: 7.5pt; }
+.rekakunin-right { display: flex; align-items: center; gap: 1.5mm; flex-shrink: 0; }
+.face-circle {
+  width: 9mm; height: 9mm;
+  border: 1.5px solid #000; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8pt; color: #333;
+}
+.ok-box {
+  border: 1.5px solid #000; border-radius: 3px;
+  padding: 1mm 2mm; font-size: 10pt; font-weight: bold; white-space: nowrap;
+}
+
+/* ---- フッター ---- */
+.slip-footer {
+  text-align: center; font-size: 9.5pt; font-weight: bold;
+  padding: 2.5mm 0; border-top: 2px solid #000;
+}
+
+/* PDF用ページ */
+.pdf-page {
+  width: 210mm; min-height: 297mm;
+  padding: 10mm 8mm; background: #fff;
+  display: flex; flex-direction: column; gap: 6mm;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== アプリUI ===== -->
+<div id="app">
+  <div class="app-title">📋 指示品依頼書システム【RICOH版】</div>
+  <button class="btn-scan-main" id="btn-scan" onclick="toggleScanner()">
+    <span id="scan-icon">📷</span>
+    <span id="scan-label">QRコードをスキャン開始</span>
+  </button>
+  <div id="status">スキャン待機中...</div>
+  <div id="slip-list"></div>
+  <div class="btn-row" id="action-btns" style="display:none">
+    <button class="btn-pdf" onclick="generatePDF()">🖨️ RICOHで印刷</button>
+    <button class="btn-clear" onclick="clearAll()">🗑️ クリア</button>
+  </div>
+</div>
+
+<!-- ===== カメラオーバーレイ ===== -->
+<div id="scanner-overlay">
+  <video id="video" playsinline autoplay muted></video>
+  <div id="scan-frame-wrap">
+    <div id="scan-frame"><div id="scan-line"></div></div>
+  </div>
+  <div id="scanner-bottom">
+    <div id="scan-count">読み取り済み：0 件</div>
+    <div id="scan-last"></div>
+    <div class="scanner-btn-row">
+      <button class="btn-scan-done" onclick="closeScanner()">✅ スキャン完了</button>
+      <button class="btn-scan-cancel" onclick="cancelScanner()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PDF生成コンテナ ===== -->
+<div id="pdf-container"></div>
+
+<script>
+// ===== QRパース =====
+function parseQR(text) {
+  try {
+    const deliveryDate = text.substring(5, 13);
+    const slipNo      = text.substring(15, 22);
+    const partNo      = text.substring(29, 39);
+    const totalQty    = parseInt(text.substring(41, 47), 10);
+    const boxType     = text.substring(47, 52).trim();
+    const capacity    = parseInt(text.substring(52, 57), 10);
+    const m = parseInt(deliveryDate.substring(4,6));
+    const d = parseInt(deliveryDate.substring(6,8));
+    const deliveryDateStr = `${m}月${d}日`;
+    const p1 = partNo.substring(0, 5);
+    const p2 = partNo.substring(5, 10);
+    const fullBoxes = Math.floor(totalQty / capacity);
+    const fraction  = totalQty % capacity;
+    return { deliveryDateStr, slipNo, partNo, p1, p2, totalQty, capacity, boxType, fullBoxes, fraction };
+  } catch(e) { return null; }
+}
+
+// ===== 伝票HTML =====
+function buildSlipHTML(data, type) {
+  const today = new Date();
+  const iraDate = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+  let title, qty, boxCount;
+  if (type === 'full') {
+    title = '指示品依頼書【整数箱】';
+    qty = data.capacity; boxCount = data.fullBoxes;
+  } else {
+    title = '指示品依頼書【端数箱】';
+    qty = data.fraction; boxCount = 1;
+  }
+
+  const d1 = data.p1.split('');
+  const d2 = data.p2.split('');
+
+  // 品番の桁td
+  const dTd1 = d1.map(c => `<td class="dc">${c}</td>`).join('');
+  const dTd2 = d2.map(c => `<td class="dc">${c}</td>`).join('');
+  // チェック○のtd（幅をdc=7mmと同じにする）
+  const cTd1 = d1.map(() => `<td class="cc"><div class="ck-circle"></div></td>`).join('');
+  const cTd2 = d2.map(() => `<td class="cc"><div class="ck-circle"></div></td>`).join('');
+
+  return `
+<div class="slip">
+
+<!-- ヘッダー：タイトル + 工程フロー -->
+<table>
+  <colgroup><col style="width:42mm"><col></colgroup>
+  <tr>
+    <td class="hdr-title" rowspan="2">${title}</td>
+    <td style="padding:0;">
+      <table><tr>
+        <td class="flow-lbl-td">依頼者</td>
+        <td class="flow-lbl-td">監督者</td>
+        <td class="flow-lbl-td">作業者</td>
+        <td class="flow-lbl-td">監督者(品確)</td>
+        <td class="flow-lbl-td" style="border-right:none;">最終確認(日程G)</td>
+      </tr></table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0;border-top:1px solid #000;">
+      <table><tr>
+        <td class="flow-arrow-td">➡</td>
+        <td class="flow-arrow-td">➡</td>
+        <td class="flow-arrow-td">➡</td>
+        <td class="flow-arrow-td">➡</td>
+        <td class="flow-arrow-td" style="border-right:none;"></td>
+      </tr></table>
+    </td>
+  </tr>
+</table>
+
+<!-- 品番 -->
+<table style="border-top:2px solid #000;">
+  <colgroup><col style="width:10mm"><col></colgroup>
+  <tr>
+    <td class="hinban-label-td">品&nbsp;&nbsp;番</td>
+    <td style="padding:0;border:none;">
+      <table class="inner-table">
+        <!-- チェック行1：かんばん転記確認 -->
+        <tr class="row-ck1">
+          ${cTd1}<td class="cs"></td>${cTd2}
+          <td class="cn">←かんばんから転記時に確認。</td>
+        </tr>
+        <!-- 品番数字行 -->
+        <tr class="row-digit" style="border-top:1px solid #000;border-bottom:1px solid #000;">
+          ${dTd1}<td class="ds">－</td>${dTd2}
+          <td class="dn"></td>
+        </tr>
+        <!-- チェック行2：見本準備 -->
+        <tr class="row-ck2">
+          ${cTd1}<td class="cs"></td>${cTd2}
+          <td class="cn">←見本準備時に作業者が確認。</td>
+        </tr>
+        <!-- チェック行3：次工程渡し -->
+        <tr class="row-ck3">
+          ${cTd1}<td class="cs"></td>${cTd2}
+          <td class="cn">←次工程へ渡し時に監督者が確認。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- 依頼日 -->
+<table style="border-top:2px solid #000;">
+  <colgroup><col style="width:10mm"><col><col style="width:52mm"></colgroup>
+  <tr>
+    <td class="irai-label-td">依頼日</td>
+    <td class="irai-date-td">${iraDate}</td>
+    <td class="biko-td">
+      <div class="biko-title">＜備考欄＞</div>
+      <div>・顧客納入日：${data.deliveryDateStr}</div>
+      <div>・納品書番号：${data.slipNo}</div>
+    </td>
+  </tr>
+</table>
+
+<!-- 数量 -->
+<table style="border-top:1px solid #000;">
+  <colgroup><col style="width:10mm"><col><col style="width:42mm"><col style="width:38mm"></colgroup>
+  <tr>
+    <td class="qty-label-td">数&nbsp;&nbsp;量</td>
+    <td class="qty-body-td">
+      <span class="qty-num">${qty.toLocaleString()}個</span>&nbsp;×&nbsp;${boxCount}箱
+    </td>
+    <td class="stamp-td">
+      <table>
+        <tr>
+          <td class="stamp-lbl-cell" style="border-right:1px solid #000;">数量<br>チェック</td>
+          <td class="stamp-lbl-cell" style="border-right:1px solid #000;">作業者</td>
+          <td class="stamp-lbl-cell" style="border-right:none;">監督者</td>
+        </tr>
+        <tr>
+          <td class="stamp-box-cell" style="border-right:1px solid #000;"></td>
+          <td class="stamp-box-cell" style="border-right:1px solid #000;"></td>
+          <td class="stamp-box-cell" style="border-right:none;"></td>
+        </tr>
+      </table>
+    </td>
+    <td class="biko-r-td">
+      トヨタ30番　・　端数品<br>
+      シリアル　N°<br>
+      (チェックシート転記時に確認)
+    </td>
+  </tr>
+</table>
+
+<!-- 出荷日/便 -->
+<table style="border-top:1px solid #000;">
+  <colgroup><col style="width:10mm"><col></colgroup>
+  <tr>
+    <td class="shipday-label-td">出荷日/<br>便</td>
+    <td class="shipday-body-td">
+      <span class="ul">&nbsp;&nbsp;&nbsp;</span>月&nbsp;
+      <span class="ul">&nbsp;&nbsp;&nbsp;</span>日&nbsp;:&nbsp;まで&nbsp;&nbsp;
+      森町便&nbsp;&nbsp;&nbsp;<span class="futa">フタバ便</span>
+    </td>
+  </tr>
+</table>
+
+<!-- 箱種 -->
+<table style="border-top:1px solid #000;">
+  <colgroup><col style="width:10mm"><col style="width:18mm"><col></colgroup>
+  <tr>
+    <td class="hako-label-td">箱&nbsp;&nbsp;種</td>
+    <td class="hako-val-td">${data.boxType}</td>
+    <td class="rekakunin-td">
+      <div class="rekakunin-inner">
+        <div class="rekakunin-txt">数量・指示日など、記入に間違いがないか　<strong>再・確・認</strong></div>
+        <div class="rekakunin-right">
+          <div class="face-circle">··</div>
+          <div class="ok-box">OK！</div>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- フッター -->
+<div class="slip-footer">受付者はこの依頼書を製品に付けて依頼者へ渡して下さい</div>
+
+</div>`;
+}
+
+// ===== 状態管理 =====
+let slips = [];
+let lastScanText = '';
+let lastScanTime = 0;
+let isScannerOpen = false;
+let videoStream = null;
+let scanInterval = null;
+
+function addSlips(data) {
+  if (data.fullBoxes > 0) slips.push({ data, type: 'full' });
+  if (data.fraction  > 0) slips.push({ data, type: 'frac' });
+  renderSlipList();
+  document.getElementById('action-btns').style.display = 'flex';
+}
+
+function renderSlipList() {
+  document.getElementById('slip-list').innerHTML = slips.map((s, i) => {
+    const isFull = s.type === 'full';
+    const qty = isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction;
+    return `<div class="slip-card">
+      <div class="slip-card-badge ${isFull ? '' : 'frac'}">${isFull ? '整数箱' : '端数箱'}</div>
+      <div>
+        <div class="slip-card-partno">${s.data.p1}－${s.data.p2}</div>
+        <div class="slip-card-qty">${qty.toLocaleString()}個</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearAll() {
+  slips = []; lastScanText = ''; lastScanTime = 0;
+  document.getElementById('slip-list').innerHTML = '';
+  document.getElementById('action-btns').style.display = 'none';
+  document.getElementById('status').textContent = 'クリアしました。';
+}
+
+// ===== スキャナー =====
+function toggleScanner() {
+  isScannerOpen ? closeScanner() : openScanner();
+}
+function openScanner() {
+  isScannerOpen = true;
+  document.getElementById('scanner-overlay').classList.add('active');
+  document.getElementById('btn-scan').classList.add('scanning');
+  document.getElementById('scan-icon').textContent = '⏹';
+  document.getElementById('scan-label').textContent = 'スキャン中...（タップで停止）';
+  document.getElementById('scan-count').textContent = `読み取り済み：${slips.length} 件`;
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      videoStream = stream;
+      const video = document.getElementById('video');
+      video.srcObject = stream; video.play();
+      startScan(video);
+    })
+    .catch(e => { alert('カメラ起動失敗: ' + e.message); cancelScanner(); });
+}
+function closeScanner() {
+  stopHW(); isScannerOpen = false;
+  document.getElementById('scanner-overlay').classList.remove('active');
+  document.getElementById('btn-scan').classList.remove('scanning');
+  document.getElementById('scan-icon').textContent = '📷';
+  document.getElementById('scan-label').textContent = 'QRコードをスキャン開始';
+  document.getElementById('status').textContent = slips.length > 0
+    ? `読み取り完了：${slips.length}件` : 'スキャン待機中...';
+}
+function cancelScanner() { closeScanner(); }
+function stopHW() {
+  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+  if (videoStream)  { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+}
+function startScan(video) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  scanInterval = setInterval(() => {
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+    let code = null;
+    try { code = jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data, canvas.width, canvas.height); } catch(e){}
+    if (!code?.data) return;
+    const now = Date.now();
+    if (code.data === lastScanText && now - lastScanTime < 3000) return;
+    lastScanText = code.data; lastScanTime = now;
+    const parsed = parseQR(code.data);
+    if (parsed) {
+      addSlips(parsed);
+      document.getElementById('scan-count').textContent = `読み取り済み：${slips.length} 件`;
+      document.getElementById('scan-last').textContent  = `✅ ${parsed.p1}-${parsed.p2}`;
+    } else {
+      document.getElementById('scan-last').textContent = '⚠️ 解析できないQRコード';
+    }
+  }, 200);
+}
+
+// ===== PDF生成 → RICOH共有 =====
+async function generatePDF() {
+  if (slips.length === 0) { alert('伝票がありません'); return; }
+  document.getElementById('status').textContent = 'PDF生成中...';
+
+  const container = document.getElementById('pdf-container');
+  container.innerHTML = '';
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  for (let i = 0; i < slips.length; i += 2) {
+    const page = document.createElement('div');
+    page.className = 'pdf-page';
+    slips.slice(i, i+2).forEach(s => { page.innerHTML += buildSlipHTML(s.data, s.type); });
+    container.appendChild(page);
+    await new Promise(r => setTimeout(r, 150));
+    const canvas = await html2canvas(page, { scale: 3, useCORS: true, logging: false });
+    if (i > 0) pdf.addPage();
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);
+    container.innerHTML = '';
+  }
+
+  const now = new Date();
+  const fname = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
+
+  // PDFをBlobに変換
+  const pdfBlob = pdf.output('blob');
+  const pdfFile = new File([pdfBlob], fname, { type: 'application/pdf' });
+
+  // Web Share API でRICOHカンタン入出力へ共有（対応端末）
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+    try {
+      await navigator.share({
+        title: '指示品依頼書',
+        files: [pdfFile]
+      });
+      document.getElementById('status').textContent = '✅ 共有完了！カンタン入出力を選択して印刷してください。';
+    } catch(e) {
+      if (e.name !== 'AbortError') {
+        // 共有キャンセル以外のエラーはダウンロードにフォールバック
+        pdf.save(fname);
+        document.getElementById('status').textContent = '✅ PDFを保存しました。カンタン入出力から開いて印刷してください。';
+      } else {
+        document.getElementById('status').textContent = '共有をキャンセルしました。';
+      }
+    }
+  } else {
+    // Web Share API 非対応端末はダウンロード
+    pdf.save(fname);
+    showRicohGuide(fname);
+  }
+}
+
+// Web Share API 非対応時のガイド表示
+function showRicohGuide(fname) {
+  document.getElementById('status').textContent = '✅ PDFを保存しました。';
+  // ガイドメッセージを表示
+  let guide = document.getElementById('ricoh-guide');
+  if (!guide) {
+    guide = document.createElement('div');
+    guide.id = 'ricoh-guide';
+    guide.style.cssText = `
+      background:#1e3a5f; border:1px solid #0ea5e9; border-radius:10px;
+      padding:14px; margin-top:12px; color:#bae6fd; font-size:13px; line-height:1.8;
+    `;
+    document.getElementById('app').appendChild(guide);
+  }
+  guide.innerHTML = `
+    <div style="font-weight:bold;font-size:14px;margin-bottom:8px;color:#7dd3fc;">🖨️ RICOHカンタン入出力で印刷する手順</div>
+    <div>① ダウンロードされた <strong>${fname}</strong> を開く</div>
+    <div>② 画面下の <strong>「共有」ボタン</strong>（□↑）をタップ</div>
+    <div>③ <strong>「カンタン入出力にコピー」</strong> を選択</div>
+    <div>④ カンタン入出力で <strong>プリンター選択→印刷</strong></div>
+  `;
+}
+</script>
+</body>
+</html>

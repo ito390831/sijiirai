@@ -140,20 +140,30 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #000;
   line-height: 1.5;
 }
-/* ②矢印を枠と枠の間に配置するため1行構成に変更 */
-/* ラベルと矢印を1行内に縦積みで表現 */
-.flow-combined-td {
+/*
+  ②矢印を枠と枠の境界に配置する構造：
+  ラベル列(幅広) と 矢印列(幅狭・負マージン) を交互に並べる。
+  矢印列はborder-leftを持たず、隣のラベル列のborder-rightと重なる位置に配置。
+  → 矢印がセルとセルの境界線上に見える。
+*/
+.flow-row-table {
+  width: 100%; border-collapse: collapse; table-layout: fixed;
+}
+/* ラベルセル */
+.flow-lbl-td {
   text-align: center; font-size: 6.5pt;
   vertical-align: middle;
+  height: 17mm;
   padding: 1mm 0;
-  height: 17mm; /* 旧2行分の高さを確保 */
 }
-.flow-lbl { font-size: 6.5pt; display: block; }
-.flow-arr { font-size: 14pt; color: #333; display: block; line-height: 1.2; }
-/* ラベルのみのセル（最初と最後） */
-.flow-lbl-only {
-  text-align: center; font-size: 6.5pt;
-  vertical-align: middle; padding: 1mm 0;
+/* 矢印セル：幅を狭くしてラベル間の境界に重ねる */
+.flow-arr-td {
+  width: 8mm; /* 矢印専用の狭い列 */
+  text-align: center; vertical-align: middle;
+  font-size: 15pt; color: #222;
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0;
   height: 17mm;
 }
 
@@ -165,12 +175,22 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #000;
   vertical-align: middle;
 }
-/* 品番内部：チェック行と数字行をtableで揃える */
+/*
+  ③品番を中央寄りに：
+  - table-layout:fixed で全列幅を明示
+  - 品番桁(10桁×8.5mm) + セパレータ(7mm) = 92mm
+  - note列を残り幅に固定し、品番ブロックが自動的に中央寄りになるよう
+    左右にspacing列を追加
+*/
 .inner-table {
-  width: 100%; border-collapse: collapse; table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
-/* ③各桁セル：幅を広げて中央寄り */
-.dc { /* digit cell */
+/* 左右のスペーサー列で品番ブロックを中央に押し込む */
+.pad-cell { border: none !important; }
+/* 各桁セル */
+.dc {
   width: 8.5mm; height: 9mm;
   text-align: center; vertical-align: middle;
   font-size: 11pt; font-weight: bold;
@@ -183,18 +203,24 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border: none;
 }
 .dn { /* digit note */
+  width: 48mm; /* 固定幅でnote列を制限 */
   text-align: left; vertical-align: middle;
   font-size: 6.5pt; padding-left: 2mm;
   white-space: nowrap; border: none;
 }
-/* チェック行：○の幅をdigit cellと同じ8.5mmに合わせる */
-.cc { /* check circle cell */
+/* チェック行の○セル：dcと同幅 */
+.cc {
   width: 8.5mm; height: 8mm;
   text-align: center; vertical-align: middle;
   border: none;
 }
-.cs { width: 7mm; border: none; } /* check separator spacer */
-.cn { text-align: left; vertical-align: middle; font-size: 6.5pt; padding-left: 2mm; white-space: nowrap; border: none; } /* check note */
+.cs { width: 7mm; border: none; }
+.cn {
+  width: 48mm;
+  text-align: left; vertical-align: middle;
+  font-size: 6.5pt; padding-left: 2mm;
+  white-space: nowrap; border: none;
+}
 .ck-circle {
   display: inline-block;
   width: 5mm; height: 5mm;
@@ -399,14 +425,34 @@ function buildSlipHTML(data, type) {
   <tr>
     <td class="hdr-title">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
     <td style="padding:0;">
-      <!-- ②矢印を枠と枠の間に：ラベル→矢印→ラベル→矢印...の1行構成 -->
-      <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <!--
+        ②矢印を枠と枠の境界に配置：
+        ラベル列と矢印列を交互に並べる。
+        矢印列(8mm)はborderなしで境界線上に浮かせる。
+        構成: [依頼者] [➡] [監督者] [➡] [作業者] [➡] [監督者(品確)] [➡] [最終確認(日程G)]
+      -->
+      <table class="flow-row-table">
+        <colgroup>
+          <col><!-- 依頼者 -->
+          <col style="width:8mm"><!-- ➡ -->
+          <col><!-- 監督者 -->
+          <col style="width:8mm"><!-- ➡ -->
+          <col><!-- 作業者 -->
+          <col style="width:8mm"><!-- ➡ -->
+          <col><!-- 監督者(品確) -->
+          <col style="width:8mm"><!-- ➡ -->
+          <col><!-- 最終確認(日程G) -->
+        </colgroup>
         <tr>
-          <td class="flow-lbl-only">依頼者</td>
-          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">監督者</span></td>
-          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">作業者</span></td>
-          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">監督者(品確)</span></td>
-          <td class="flow-combined-td" style="border-right:none;"><span class="flow-arr">➡</span><span class="flow-lbl">最終確認(日程G)</span></td>
+          <td class="flow-lbl-td">依頼者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">監督者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">作業者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">監督者<br>(品確)</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
         </tr>
       </table>
     </td>
@@ -419,7 +465,19 @@ function buildSlipHTML(data, type) {
   <tr>
     <td class="hinban-label-td">品&nbsp;&nbsp;番</td>
     <td style="padding:0;border:none;">
+      <!--
+        ③中央寄せ：
+        10桁×8.5mm=85mm + セパレータ7mm = 92mm
+        伝票幅194mm - 品番ラベル10mm = 184mm が内部幅
+        左右スペーサーで (184-92-48)/2 ≈ 22mm ずつ確保して中央へ
+      -->
       <table class="inner-table">
+        <colgroup>
+          <col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><!-- d1×5 -->
+          <col style="width:7mm"><!-- sep -->
+          <col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><!-- d2×5 -->
+          <col><!-- note：残り全幅 -->
+        </colgroup>
         <!-- チェック行1：かんばん転記確認 -->
         <tr class="row-ck1">
           ${cTd1}<td class="cs"></td>${cTd2}

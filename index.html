@@ -215,20 +215,18 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   font-size: 8pt; padding-left: 2mm;
   white-space: nowrap; border: none;
 }
-/* ③レ点でスマイル：··を2mm上に */
+/* ③ck-circle：疑似要素なし。··はHTML直書きspanで2mm上にずらす */
 .ck-circle {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 7mm; height: 7mm;
   border: 1px solid #000; border-radius: 50%;
-  position: relative;
 }
-.ck-circle::after {
-  content: '··';
-  position: absolute;
+.ck-dots {
   font-size: 8pt;
-  left: 50%; top: calc(50% - 2mm);
-  transform: translate(-50%, -50%);
   line-height: 1;
+  margin-bottom: 2mm;  /* 2mm上方向にずらす */
 }
 /* 品番ボーダー */
 .row-ck1 td { border-bottom: 1px solid #ccc; }
@@ -274,10 +272,10 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   padding: 0 0.5mm;
 }
 .stamp-box-cell { height: 13mm; }
-/* 右側備考 */
+/* 右側備考：幅を広げてフォント小さく */
 .biko-r-td {
-  width: 40mm; vertical-align: top;
-  padding: 1mm 2mm; font-size: 8pt; line-height: 1.6;
+  width: 44mm; vertical-align: top;
+  padding: 1mm 1.5mm; font-size: 6.5pt; line-height: 1.6;
 }
 
 /* ---- 出荷日/便 ---- */
@@ -312,11 +310,20 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .rekakunin-txt { font-size: 9.5pt; }
 .rekakunin-right { display: flex; align-items: center; gap: 1.5mm; flex-shrink: 0; }
+/* ③ face-circle：疑似要素なし。··はHTML直書きspanで2mm上にずらす */
 .face-circle {
   width: 11mm; height: 11mm;
   border: 1.5px solid #000; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.face-dots {
   font-size: 10pt; color: #333;
+  line-height: 1;
+  margin-bottom: 2mm;  /* 2mm上方向にずらす */
+  letter-spacing: 1px;
 }
 .ok-box {
   border: 1.5px solid #000; border-radius: 3px;
@@ -414,8 +421,8 @@ function buildSlipHTML(data, type) {
   const dTd1 = d1.map(c => `<td class="dc">${c}</td>`).join('');
   const dTd2 = d2.map(c => `<td class="dc">${c}</td>`).join('');
   // チェック○のtd（幅をdc=7mmと同じにする）
-  const cTd1 = d1.map(() => `<td class="cc"><div class="ck-circle"></div></td>`).join('');
-  const cTd2 = d2.map(() => `<td class="cc"><div class="ck-circle"></div></td>`).join('');
+  const cTd1 = d1.map(() => `<td class="cc"><div class="ck-circle"><span class="ck-dots">··</span></div></td>`).join('');
+  const cTd2 = d2.map(() => `<td class="cc"><div class="ck-circle"><span class="ck-dots">··</span></div></td>`).join('');
 
   return `
 <div class="slip">
@@ -552,9 +559,9 @@ function buildSlipHTML(data, type) {
       </table>
     </td>
     <td class="biko-r-td">
-      トヨタ30番　・　端数品<br>
-      シリアル　No.<br>
-      (チェックシート転記時に確認)
+      トヨタ30番 ・ 端数品<br>
+      シリアル No.<br>
+      <span style="font-size:6pt;">(チェックシート転記時に確認)</span>
     </td>
   </tr>
 </table>
@@ -584,7 +591,7 @@ function buildSlipHTML(data, type) {
       <div class="rekakunin-inner">
         <div class="rekakunin-txt">数量・指示日など、記入に間違いがないか　<strong>再・確・認</strong></div>
         <div class="rekakunin-right">
-          <div class="face-circle">··</div>
+          <div class="face-circle"><span class="face-dots">··</span></div>
           <div class="ok-box">OK！</div>
         </div>
       </div>

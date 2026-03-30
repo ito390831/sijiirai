@@ -140,31 +140,36 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #000;
   line-height: 1.5;
 }
-/*
-  ②矢印を枠と枠の境界に配置する構造：
-  ラベル列(幅広) と 矢印列(幅狭・負マージン) を交互に並べる。
-  矢印列はborder-leftを持たず、隣のラベル列のborder-rightと重なる位置に配置。
-  → 矢印がセルとセルの境界線上に見える。
-*/
+/* 工程フロー：上段ラベル＋下段押印の2行構造 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
-/* ラベルセル */
+/* 上段ラベルセル */
 .flow-lbl-td {
-  text-align: center; font-size: 6.5pt;
+  text-align: center; font-size: 6.5pt; font-weight: bold;
   vertical-align: middle;
-  height: 17mm;
-  padding: 1mm 0;
+  height: 7mm; padding: 1mm 0;
+  border-bottom: 1px solid #000;
 }
-/* 矢印セル：幅を狭くしてラベル間の境界に重ねる */
+/* 上段矢印セル */
 .flow-arr-td {
-  width: 8mm; /* 矢印専用の狭い列 */
+  width: 8mm;
   text-align: center; vertical-align: middle;
-  font-size: 15pt; color: #222;
-  border-left: none !important;
-  border-right: none !important;
-  padding: 0;
-  height: 17mm;
+  font-size: 14pt; color: #222;
+  border-left: none !important; border-right: none !important;
+  border-bottom: 1px solid #000;
+  padding: 0; height: 7mm;
+}
+/* 下段押印スペースセル */
+.flow-stamp-td {
+  text-align: center; vertical-align: middle;
+  height: 12mm; padding: 0;
+}
+/* 下段矢印列（空欄） */
+.flow-arr-stamp-td {
+  width: 8mm;
+  border-left: none !important; border-right: none !important;
+  height: 12mm;
 }
 
 /* ---- 品番 ---- */
@@ -286,10 +291,10 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   vertical-align: middle; line-height: 1.4; padding: 1mm 0;
 }
 .shipday-body-td {
-  font-size: 9pt; vertical-align: middle;
+  font-size: 9pt; vertical-align: middle; text-align: center;
   height: 9mm; padding: 0 3mm; white-space: nowrap;
 }
-.ul { border-bottom: 1px solid #000; display: inline-block; min-width: 5mm; }
+.ul { border-bottom: 1px solid #000; display: inline-block; min-width: 8mm; }
 .futa { text-decoration: underline; }
 
 /* ---- 箱種 ---- */
@@ -299,7 +304,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #000; vertical-align: middle;
 }
 .hako-val-td {
-  width: 18mm; font-size: 10pt; font-weight: bold;
+  width: 20mm; font-size: 10pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1px solid #000; padding: 1mm;
 }
@@ -419,18 +424,12 @@ function buildSlipHTML(data, type) {
   return `
 <div class="slip">
 
-<!-- ヘッダー：タイトル + 工程フロー -->
+<!-- ヘッダー：タイトル + 工程フロー（上段ラベル・下段押印） -->
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
-    <td class="hdr-title">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
+    <td class="hdr-title" rowspan="2">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
     <td style="padding:0;">
-      <!--
-        ②矢印を枠と枠の境界に配置：
-        ラベル列と矢印列を交互に並べる。
-        矢印列(8mm)はborderなしで境界線上に浮かせる。
-        構成: [依頼者] [➡] [監督者] [➡] [作業者] [➡] [監督者(品確)] [➡] [最終確認(日程G)]
-      -->
       <table class="flow-row-table">
         <colgroup>
           <col><!-- 依頼者 -->
@@ -443,6 +442,7 @@ function buildSlipHTML(data, type) {
           <col style="width:8mm"><!-- ➡ -->
           <col><!-- 最終確認(日程G) -->
         </colgroup>
+        <!-- 上段：ラベル行 -->
         <tr>
           <td class="flow-lbl-td">依頼者</td>
           <td class="flow-arr-td">➡</td>
@@ -453,6 +453,18 @@ function buildSlipHTML(data, type) {
           <td class="flow-lbl-td">監督者<br>(品確)</td>
           <td class="flow-arr-td">➡</td>
           <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
+        </tr>
+        <!-- 下段：押印スペース行 -->
+        <tr>
+          <td class="flow-stamp-td"></td>
+          <td class="flow-arr-stamp-td"></td>
+          <td class="flow-stamp-td"></td>
+          <td class="flow-arr-stamp-td"></td>
+          <td class="flow-stamp-td"></td>
+          <td class="flow-arr-stamp-td"></td>
+          <td class="flow-stamp-td"></td>
+          <td class="flow-arr-stamp-td"></td>
+          <td class="flow-stamp-td" style="border-right:none;"></td>
         </tr>
       </table>
     </td>

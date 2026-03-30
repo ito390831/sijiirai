@@ -110,10 +110,6 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 #pdf-container { position: fixed; left: -9999px; top: 0; background: #fff; }
 
 /* ===== 伝票スタイル ===== */
-/*
-  目標：写真の実物と同じ横長フォーム
-  A4縦(210×297mm)に2枚配置 → 各伝票幅: 194mm
-*/
 .slip {
   width: 194mm;
   border: 2px solid #000;
@@ -134,110 +130,107 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- ヘッダー ---- */
 .hdr-title {
-  font-size: 12pt; font-weight: bold;
+  font-size: 14pt; font-weight: bold;  /* ①2倍相当 */
   text-align: center; padding: 2mm 1mm;
   vertical-align: middle;
   border-right: 2px solid #000;
-  line-height: 1.5;
+  line-height: 1.6;
 }
-/* タイトル列の下段空セル（ボーダーを消してタイトル列が一体に見えるよう） */
 .hdr-title-blank {
   border-right: 2px solid #000;
   border-top: none !important;
   padding: 0;
 }
-/* 工程フロー：上段ラベル＋下段押印の2行構造 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
-/* 上段ラベルセル */
+/* 上段ラベルセル ①フォント2倍 */
 .flow-lbl-td {
-  text-align: center; font-size: 6.5pt; font-weight: bold;
+  text-align: center; font-size: 9pt; font-weight: bold;
   vertical-align: middle;
-  height: 7mm; padding: 1mm 0;
+  height: 9mm; padding: 1mm 0;
   border-bottom: 1px solid #000;
 }
-/* 上段矢印セル */
+/* 上段矢印セル ①矢印2倍 */
 .flow-arr-td {
-  width: 8mm;
+  width: 10mm;
   text-align: center; vertical-align: middle;
-  font-size: 14pt; color: #222;
+  font-size: 18pt; color: #222;
   border-left: none !important; border-right: none !important;
   border-bottom: 1px solid #000;
-  padding: 0; height: 7mm;
+  padding: 0; height: 9mm;
 }
-/* 下段押印スペースセル */
+/* 下段押印スペース（直径9mmハンコ用：18mm確保） */
 .flow-stamp-td {
   text-align: center; vertical-align: middle;
   height: 18mm; padding: 0;
 }
-/* 下段矢印列（空欄） */
 .flow-arr-stamp-td {
-  width: 8mm;
+  width: 10mm;
   border-left: none !important; border-right: none !important;
   height: 18mm;
 }
 
 /* ---- 品番 ---- */
 .hinban-label-td {
-  width: 10mm;
-  font-size: 8.5pt; font-weight: bold;
+  width: 14mm;  /* ①2倍 */
+  font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl; letter-spacing: 2px;
   border-right: 2px solid #000;
   vertical-align: middle;
 }
-/*
-  ③品番を中央寄りに：
-  - table-layout:fixed で全列幅を明示
-  - 品番桁(10桁×8.5mm) + セパレータ(7mm) = 92mm
-  - note列を残り幅に固定し、品番ブロックが自動的に中央寄りになるよう
-    左右にspacing列を追加
-*/
 .inner-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
-/* 左右のスペーサー列で品番ブロックを中央に押し込む */
 .pad-cell { border: none !important; }
-/* 各桁セル */
+/* 各桁セル ①2倍 */
 .dc {
-  width: 8.5mm; height: 9mm;
+  width: 11mm; height: 12mm;
   text-align: center; vertical-align: middle;
-  font-size: 11pt; font-weight: bold;
+  font-size: 14pt; font-weight: bold;
   border: 1px solid #000;
 }
-.ds { /* digit separator */
-  width: 7mm;
+.ds {
+  width: 9mm;
   text-align: center; vertical-align: middle;
-  font-size: 12pt; font-weight: bold;
+  font-size: 15pt; font-weight: bold;
   border: none;
 }
-.dn { /* digit note */
-  width: 48mm; /* 固定幅でnote列を制限 */
+.dn {
   text-align: left; vertical-align: middle;
-  font-size: 6.5pt; padding-left: 2mm;
+  font-size: 8pt; padding-left: 2mm;
   white-space: nowrap; border: none;
 }
-/* チェック行の○セル：dcと同幅 */
+/* チェック行 ①2倍 */
 .cc {
-  width: 8.5mm; height: 8mm;
+  width: 11mm; height: 10mm;
   text-align: center; vertical-align: middle;
   border: none;
 }
-.cs { width: 7mm; border: none; }
+.cs { width: 9mm; border: none; }
 .cn {
-  width: 48mm;
   text-align: left; vertical-align: middle;
-  font-size: 6.5pt; padding-left: 2mm;
+  font-size: 8pt; padding-left: 2mm;
   white-space: nowrap; border: none;
 }
+/* ③レ点でスマイル：··を2mm上に */
 .ck-circle {
   display: inline-block;
-  width: 5mm; height: 5mm;
+  width: 7mm; height: 7mm;
   border: 1px solid #000; border-radius: 50%;
+  position: relative;
 }
-/* 品番エリアの各行ボーダー */
+.ck-circle::after {
+  content: '··';
+  position: absolute;
+  font-size: 8pt;
+  left: 50%; top: calc(50% - 2mm);
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+/* 品番ボーダー */
 .row-ck1 td { border-bottom: 1px solid #ccc; }
 .row-digit td.dc { border: 1px solid #000; }
 .row-ck2 td { border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; }
@@ -245,72 +238,69 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- 依頼日 ---- */
 .irai-label-td {
-  width: 10mm; font-size: 8pt; font-weight: bold;
+  width: 14mm; font-size: 10pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 2px solid #000;
 }
-/* ④依頼日を2/3幅に縮小（幅を明示的に指定） */
 .irai-date-td {
-  font-size: 11pt; text-align: center;
-  vertical-align: middle; height: 10mm;
+  font-size: 13pt; text-align: center;
+  vertical-align: middle; height: 13mm;
   border-right: 1px solid #000;
-  width: 55mm; /* 旧: auto → 固定幅で縮小 */
+  width: 55mm;
 }
-/* ④備考欄を広げる（width削除→残り全幅を使う） */
 .biko-td {
   vertical-align: top;
-  padding: 1.5mm 2mm; font-size: 7pt;
-  /* width:52mm を削除して拡張 */
+  padding: 1.5mm 2mm; font-size: 9pt;
 }
-.biko-title { font-weight: bold; font-size: 7.5pt; margin-bottom: 1mm; }
+.biko-title { font-weight: bold; font-size: 9.5pt; margin-bottom: 1mm; }
 
 /* ---- 数量 ---- */
 .qty-label-td {
-  width: 10mm; font-size: 8.5pt; font-weight: bold;
+  width: 14mm; font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl;
   border-right: 2px solid #000; vertical-align: middle;
 }
 .qty-body-td {
-  font-size: 12pt; font-weight: bold;
+  font-size: 16pt; font-weight: bold;
   text-align: center; vertical-align: middle;
-  height: 15mm; border-right: 1px solid #000;
+  height: 18mm; border-right: 1px solid #000;
 }
 .qty-num { text-decoration: underline; }
 /* 捺印エリア */
 .stamp-td { width: 42mm; vertical-align: top; padding: 0; }
 .stamp-lbl-cell {
-  text-align: center; font-size: 6.5pt;
-  height: 7mm; border-bottom: 1px solid #000; vertical-align: middle;
+  text-align: center; font-size: 8pt;
+  height: 9mm; border-bottom: 1px solid #000; vertical-align: middle;
   padding: 0 0.5mm;
 }
-.stamp-box-cell { height: 10mm; }
+.stamp-box-cell { height: 13mm; }
 /* 右側備考 */
 .biko-r-td {
-  width: 38mm; vertical-align: top;
-  padding: 1mm 2mm; font-size: 6.5pt; line-height: 1.5;
+  width: 40mm; vertical-align: top;
+  padding: 1mm 2mm; font-size: 8pt; line-height: 1.6;
 }
 
 /* ---- 出荷日/便 ---- */
 .shipday-label-td {
-  width: 10mm; font-size: 7pt; font-weight: bold;
+  width: 14mm; font-size: 9pt; font-weight: bold;
   text-align: center; border-right: 2px solid #000;
   vertical-align: middle; line-height: 1.4; padding: 1mm 0;
 }
 .shipday-body-td {
-  font-size: 9pt; vertical-align: middle; text-align: center;
-  height: 9mm; padding: 0 3mm; white-space: nowrap;
+  font-size: 11pt; vertical-align: middle; text-align: center;
+  height: 12mm; padding: 0 3mm; white-space: nowrap;
 }
-.ul { border-bottom: 1px solid #000; display: inline-block; min-width: 8mm; }
-.futa { text-decoration: underline; }
+/* ②アンダーバー10mm */
+.ul { border-bottom: 1.5px solid #000; display: inline-block; min-width: 10mm; }
 
 /* ---- 箱種 ---- */
 .hako-label-td {
-  width: 10mm; font-size: 8.5pt; font-weight: bold;
+  width: 14mm; font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl;
   border-right: 2px solid #000; vertical-align: middle;
 }
 .hako-val-td {
-  width: 20mm; font-size: 10pt; font-weight: bold;
+  width: 22mm; font-size: 12pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1px solid #000; padding: 1mm;
 }
@@ -320,30 +310,30 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   display: flex; align-items: center; justify-content: space-between;
   padding: 1.5mm 2mm; gap: 2mm;
 }
-.rekakunin-txt { font-size: 7.5pt; }
+.rekakunin-txt { font-size: 9.5pt; }
 .rekakunin-right { display: flex; align-items: center; gap: 1.5mm; flex-shrink: 0; }
 .face-circle {
-  width: 9mm; height: 9mm;
+  width: 11mm; height: 11mm;
   border: 1.5px solid #000; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 8pt; color: #333;
+  font-size: 10pt; color: #333;
 }
 .ok-box {
   border: 1.5px solid #000; border-radius: 3px;
-  padding: 1mm 2mm; font-size: 10pt; font-weight: bold; white-space: nowrap;
+  padding: 1.5mm 3mm; font-size: 13pt; font-weight: bold; white-space: nowrap;
 }
 
 /* ---- フッター ---- */
 .slip-footer {
-  text-align: center; font-size: 9.5pt; font-weight: bold;
-  padding: 2.5mm 0; border-top: 2px solid #000;
+  text-align: center; font-size: 12pt; font-weight: bold;
+  padding: 3mm 0; border-top: 2px solid #000;
 }
 
 /* PDF用ページ */
 .pdf-page {
   width: 210mm; min-height: 297mm;
-  padding: 10mm 8mm; background: #fff;
-  display: flex; flex-direction: column; gap: 6mm;
+  padding: 8mm 8mm; background: #fff;
+  display: flex; flex-direction: column; gap: 4mm;
 }
 </style>
 </head>
@@ -495,9 +485,9 @@ function buildSlipHTML(data, type) {
       -->
       <table class="inner-table">
         <colgroup>
-          <col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><!-- d1×5 -->
-          <col style="width:7mm"><!-- sep -->
-          <col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><col style="width:8.5mm"><!-- d2×5 -->
+          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><!-- d1×5 -->
+          <col style="width:9mm"><!-- sep -->
+          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><!-- d2×5 -->
           <col><!-- note：残り全幅 -->
         </colgroup>
         <!-- チェック行1：かんばん転記確認 -->
@@ -577,9 +567,9 @@ function buildSlipHTML(data, type) {
     <td class="shipday-body-td">
       <span class="ul">&nbsp;&nbsp;&nbsp;</span>月&nbsp;
       <span class="ul">&nbsp;&nbsp;&nbsp;</span>日&nbsp;&nbsp;
-      <span class="ul" style="min-width:5mm;">&nbsp;</span>:&nbsp;<span class="ul" style="min-width:5mm;">&nbsp;</span>
+      <span class="ul" style="min-width:10mm;">&nbsp;</span>:&nbsp;<span class="ul" style="min-width:10mm;">&nbsp;</span>
       &nbsp;まで&nbsp;&nbsp;
-      森町便&nbsp;&nbsp;&nbsp;<span class="futa">フタバ便</span>
+      森町便&nbsp;&nbsp;&nbsp;フタバ便
     </td>
   </tr>
 </table>
@@ -644,6 +634,40 @@ function clearAll() {
   document.getElementById('status').textContent = 'クリアしました。';
 }
 
+// ===== スキャン音 (Web Audio API) =====
+function playOK() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // 短い上昇2音：ポポン
+    [880, 1320].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.12;
+      g.gain.setValueAtTime(0.4, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o.start(t); o.stop(t + 0.15);
+    });
+  } catch(e) {}
+}
+function playNG() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // 低い下降音：ブブッ
+    [330, 220].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.15;
+      g.gain.setValueAtTime(0.3, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      o.start(t); o.stop(t + 0.18);
+    });
+  } catch(e) {}
+}
+
 // ===== スキャナー =====
 function toggleScanner() {
   isScannerOpen ? closeScanner() : openScanner();
@@ -693,10 +717,12 @@ function startScan(video) {
     lastScanText = code.data; lastScanTime = now;
     const parsed = parseQR(code.data);
     if (parsed) {
+      playOK();
       addSlips(parsed);
       document.getElementById('scan-count').textContent = `読み取り済み：${slips.length} 件`;
       document.getElementById('scan-last').textContent  = `✅ ${parsed.p1}-${parsed.p2}`;
     } else {
+      playNG();
       document.getElementById('scan-last').textContent = '⚠️ 解析できないQRコード';
     }
   }, 200);

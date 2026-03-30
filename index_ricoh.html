@@ -169,13 +169,13 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* 下段押印スペースセル */
 .flow-stamp-td {
   text-align: center; vertical-align: middle;
-  height: 12mm; padding: 0;
+  height: 18mm; padding: 0;
 }
 /* 下段矢印列（空欄） */
 .flow-arr-stamp-td {
   width: 8mm;
   border-left: none !important; border-right: none !important;
-  height: 12mm;
+  height: 18mm;
 }
 
 /* ---- 品番 ---- */
@@ -563,7 +563,7 @@ function buildSlipHTML(data, type) {
     </td>
     <td class="biko-r-td">
       トヨタ30番　・　端数品<br>
-      シリアル　N°<br>
+      シリアル　No.<br>
       (チェックシート転記時に確認)
     </td>
   </tr>
@@ -576,7 +576,9 @@ function buildSlipHTML(data, type) {
     <td class="shipday-label-td">出荷日/<br>便</td>
     <td class="shipday-body-td">
       <span class="ul">&nbsp;&nbsp;&nbsp;</span>月&nbsp;
-      <span class="ul">&nbsp;&nbsp;&nbsp;</span>日&nbsp;:&nbsp;まで&nbsp;&nbsp;
+      <span class="ul">&nbsp;&nbsp;&nbsp;</span>日&nbsp;&nbsp;
+      <span class="ul" style="min-width:5mm;">&nbsp;</span>:&nbsp;<span class="ul" style="min-width:5mm;">&nbsp;</span>
+      &nbsp;まで&nbsp;&nbsp;
       森町便&nbsp;&nbsp;&nbsp;<span class="futa">フタバ便</span>
     </td>
   </tr>

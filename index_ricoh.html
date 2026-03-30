@@ -134,18 +134,27 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- ヘッダー ---- */
 .hdr-title {
-  font-size: 13pt; font-weight: bold;
-  text-align: center; padding: 3mm 1mm;
+  font-size: 12pt; font-weight: bold;
+  text-align: center; padding: 2mm 1mm;
   vertical-align: middle;
   border-right: 2px solid #000;
+  line-height: 1.5;
 }
-.flow-lbl-td {
+/* ②矢印を枠と枠の間に配置するため1行構成に変更 */
+/* ラベルと矢印を1行内に縦積みで表現 */
+.flow-combined-td {
   text-align: center; font-size: 6.5pt;
-  height: 6.5mm; border-bottom: 1px solid #000;
+  vertical-align: middle;
+  padding: 1mm 0;
+  height: 17mm; /* 旧2行分の高さを確保 */
 }
-.flow-arrow-td {
-  text-align: center; font-size: 13pt;
-  height: 11mm; color: #444;
+.flow-lbl { font-size: 6.5pt; display: block; }
+.flow-arr { font-size: 14pt; color: #333; display: block; line-height: 1.2; }
+/* ラベルのみのセル（最初と最後） */
+.flow-lbl-only {
+  text-align: center; font-size: 6.5pt;
+  vertical-align: middle; padding: 1mm 0;
+  height: 17mm;
 }
 
 /* ---- 品番 ---- */
@@ -160,17 +169,17 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .inner-table {
   width: 100%; border-collapse: collapse; table-layout: auto;
 }
-/* 各桁セル：固定幅 */
+/* ③各桁セル：幅を広げて中央寄り */
 .dc { /* digit cell */
-  width: 7mm; height: 8.5mm;
+  width: 8.5mm; height: 9mm;
   text-align: center; vertical-align: middle;
-  font-size: 10.5pt; font-weight: bold;
+  font-size: 11pt; font-weight: bold;
   border: 1px solid #000;
 }
 .ds { /* digit separator */
-  width: 6mm;
+  width: 7mm;
   text-align: center; vertical-align: middle;
-  font-size: 11pt; font-weight: bold;
+  font-size: 12pt; font-weight: bold;
   border: none;
 }
 .dn { /* digit note */
@@ -178,17 +187,17 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   font-size: 6.5pt; padding-left: 2mm;
   white-space: nowrap; border: none;
 }
-/* チェック行：○の幅をdigit cellと同じ7mmに合わせる */
+/* チェック行：○の幅をdigit cellと同じ8.5mmに合わせる */
 .cc { /* check circle cell */
-  width: 7mm; height: 7mm;
+  width: 8.5mm; height: 8mm;
   text-align: center; vertical-align: middle;
   border: none;
 }
-.cs { width: 6mm; border: none; } /* check separator spacer */
+.cs { width: 7mm; border: none; } /* check separator spacer */
 .cn { text-align: left; vertical-align: middle; font-size: 6.5pt; padding-left: 2mm; white-space: nowrap; border: none; } /* check note */
 .ck-circle {
   display: inline-block;
-  width: 4.5mm; height: 4.5mm;
+  width: 5mm; height: 5mm;
   border: 1px solid #000; border-radius: 50%;
 }
 /* 品番エリアの各行ボーダー */
@@ -203,14 +212,18 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   text-align: center; vertical-align: middle;
   border-right: 2px solid #000;
 }
+/* ④依頼日を2/3幅に縮小（幅を明示的に指定） */
 .irai-date-td {
   font-size: 11pt; text-align: center;
   vertical-align: middle; height: 10mm;
   border-right: 1px solid #000;
+  width: 55mm; /* 旧: auto → 固定幅で縮小 */
 }
+/* ④備考欄を広げる（width削除→残り全幅を使う） */
 .biko-td {
-  width: 52mm; vertical-align: top;
+  vertical-align: top;
   padding: 1.5mm 2mm; font-size: 7pt;
+  /* width:52mm を削除して拡張 */
 }
 .biko-title { font-weight: bold; font-size: 7.5pt; margin-bottom: 1mm; }
 
@@ -384,26 +397,18 @@ function buildSlipHTML(data, type) {
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
-    <td class="hdr-title" rowspan="2">${title}</td>
+    <td class="hdr-title">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
     <td style="padding:0;">
-      <table><tr>
-        <td class="flow-lbl-td">依頼者</td>
-        <td class="flow-lbl-td">監督者</td>
-        <td class="flow-lbl-td">作業者</td>
-        <td class="flow-lbl-td">監督者(品確)</td>
-        <td class="flow-lbl-td" style="border-right:none;">最終確認(日程G)</td>
-      </tr></table>
-    </td>
-  </tr>
-  <tr>
-    <td style="padding:0;border-top:1px solid #000;">
-      <table><tr>
-        <td class="flow-arrow-td">➡</td>
-        <td class="flow-arrow-td">➡</td>
-        <td class="flow-arrow-td">➡</td>
-        <td class="flow-arrow-td">➡</td>
-        <td class="flow-arrow-td" style="border-right:none;"></td>
-      </tr></table>
+      <!-- ②矢印を枠と枠の間に：ラベル→矢印→ラベル→矢印...の1行構成 -->
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+        <tr>
+          <td class="flow-lbl-only">依頼者</td>
+          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">監督者</span></td>
+          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">作業者</span></td>
+          <td class="flow-combined-td"><span class="flow-arr">➡</span><span class="flow-lbl">監督者(品確)</span></td>
+          <td class="flow-combined-td" style="border-right:none;"><span class="flow-arr">➡</span><span class="flow-lbl">最終確認(日程G)</span></td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>
@@ -442,7 +447,7 @@ function buildSlipHTML(data, type) {
 
 <!-- 依頼日 -->
 <table style="border-top:2px solid #000;">
-  <colgroup><col style="width:10mm"><col><col style="width:52mm"></colgroup>
+  <colgroup><col style="width:10mm"><col style="width:55mm"><col><!-- 備考欄：残り全幅 --></colgroup>
   <tr>
     <td class="irai-label-td">依頼日</td>
     <td class="irai-date-td">${iraDate}</td>

@@ -140,6 +140,12 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #000;
   line-height: 1.5;
 }
+/* タイトル列の下段空セル（ボーダーを消してタイトル列が一体に見えるよう） */
+.hdr-title-blank {
+  border-right: 2px solid #000;
+  border-top: none !important;
+  padding: 0;
+}
 /* 工程フロー：上段ラベル＋下段押印の2行構造 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
@@ -428,21 +434,14 @@ function buildSlipHTML(data, type) {
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
-    <td class="hdr-title" rowspan="2">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
-    <td style="padding:0;">
+    <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
+    <td style="padding:0; border-bottom:1px solid #000;">
+      <!-- 上段：ラベル＋矢印行 -->
       <table class="flow-row-table">
         <colgroup>
-          <col><!-- 依頼者 -->
-          <col style="width:8mm"><!-- ➡ -->
-          <col><!-- 監督者 -->
-          <col style="width:8mm"><!-- ➡ -->
-          <col><!-- 作業者 -->
-          <col style="width:8mm"><!-- ➡ -->
-          <col><!-- 監督者(品確) -->
-          <col style="width:8mm"><!-- ➡ -->
-          <col><!-- 最終確認(日程G) -->
+          <col><col style="width:8mm"><col><col style="width:8mm">
+          <col><col style="width:8mm"><col><col style="width:8mm"><col>
         </colgroup>
-        <!-- 上段：ラベル行 -->
         <tr>
           <td class="flow-lbl-td">依頼者</td>
           <td class="flow-arr-td">➡</td>
@@ -454,7 +453,18 @@ function buildSlipHTML(data, type) {
           <td class="flow-arr-td">➡</td>
           <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
         </tr>
-        <!-- 下段：押印スペース行 -->
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td class="hdr-title-blank"></td><!-- タイトル列の下段（空） -->
+    <td style="padding:0;">
+      <!-- 下段：押印スペース行 -->
+      <table class="flow-row-table">
+        <colgroup>
+          <col><col style="width:8mm"><col><col style="width:8mm">
+          <col><col style="width:8mm"><col><col style="width:8mm"><col>
+        </colgroup>
         <tr>
           <td class="flow-stamp-td"></td>
           <td class="flow-arr-stamp-td"></td>

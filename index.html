@@ -109,7 +109,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ===== PDF生成コンテナ ===== */
 #pdf-container {
   position: fixed; left: -9999px; top: 0; background: #fff;
-  width: 794px; /* A4幅 210mm = 794px@96dpi */
+  width: 794px;
 }
 
 /* ===== 伝票スタイル ===== */
@@ -134,7 +134,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- ヘッダー：濃紺背景・白文字 ---- */
 .hdr-title {
-  font-size: 13pt; font-weight: bold;
+  font-size: 15pt; font-weight: bold;
   text-align: center; padding: 2.5mm 1mm;
   vertical-align: middle;
   border-right: 2px solid #1a3a6b;
@@ -153,7 +153,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .flow-lbl-td {
-  text-align: center; font-size: 8pt; font-weight: bold;
+  text-align: center; font-size: 9pt; font-weight: bold;
   vertical-align: middle;
   height: 9mm; padding: 1mm 0;
   border-bottom: 1.5px solid #4a6fa5;
@@ -184,7 +184,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ---- 品番：ラベルグレー・チェック行薄黄 ---- */
 .hinban-label-td {
   width: 14mm;
-  font-size: 10pt; font-weight: bold;
+  font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl; letter-spacing: 3px;
   border-right: 2px solid #888;
   vertical-align: middle;
@@ -197,16 +197,16 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .pad-cell { border: none !important; }
 .dc {
-  width: 11mm; height: 12mm;
+  width: 11mm; height: 14mm;
   text-align: center; vertical-align: middle;
-  font-size: 15pt; font-weight: bold;
+  font-size: 18pt; font-weight: bold;
   border: 1.5px solid #888;
   background: #fff; color: #111;
 }
 .ds {
   width: 9mm;
   text-align: center; vertical-align: middle;
-  font-size: 15pt; font-weight: bold;
+  font-size: 18pt; font-weight: bold;
   border: none; color: #555;
 }
 .dn {
@@ -224,7 +224,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .cs { width: 9mm; border: none; background: #fffbe6; }
 .cn {
   text-align: left; vertical-align: middle;
-  font-size: 7.5pt; padding-left: 3mm;
+  font-size: 8pt; padding-left: 3mm;
   white-space: nowrap; border: none;
   color: #666; font-style: italic;
   background: #fffbe6;
@@ -248,44 +248,44 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- 依頼日：ラベルグレー・備考薄グリーン ---- */
 .irai-label-td {
-  width: 14mm; font-size: 9pt; font-weight: bold;
+  width: 14mm; font-size: 10pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 2px solid #888;
   background: #f0f0f0; color: #333;
 }
 .irai-date-td {
-  font-size: 13pt; font-weight: bold; text-align: center;
+  font-size: 16pt; font-weight: bold; text-align: center;
   vertical-align: middle; height: 13mm;
   border-right: 1.5px solid #bbb;
   width: 55mm; color: #111;
 }
 .biko-td {
   vertical-align: top;
-  padding: 2mm 3mm; font-size: 8.5pt;
+  padding: 2mm 3mm; font-size: 10.5pt;
   background: #f2f9f2;
 }
 .biko-title {
-  font-weight: bold; font-size: 9pt;
+  font-weight: bold; font-size: 11pt;
   margin-bottom: 1.5mm; color: #2a6a2a;
 }
 
 /* ---- 数量：最重要情報を特大フォント ---- */
 .qty-label-td {
-  width: 14mm; font-size: 10pt; font-weight: bold;
+  width: 14mm; font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl;
   border-right: 2px solid #888; vertical-align: middle;
   background: #f0f0f0; color: #333;
 }
 .qty-body-td {
-  font-size: 20pt; font-weight: bold;
+  font-size: 28pt; font-weight: bold;
   text-align: center; vertical-align: middle;
-  height: 18mm; border-right: 1.5px solid #bbb;
+  height: 22mm; border-right: 1.5px solid #bbb;
   color: #111; letter-spacing: 1px;
 }
 .qty-num { text-decoration: underline; }
 .stamp-td { width: 42mm; vertical-align: top; padding: 0; }
 .stamp-lbl-cell {
-  text-align: center; font-size: 7.5pt; font-weight: bold;
+  text-align: center; font-size: 8pt; font-weight: bold;
   height: 9mm; border-bottom: 1.5px solid #bbb; vertical-align: middle;
   padding: 0 0.5mm;
   background: #f5f5f5; color: #444;
@@ -293,19 +293,19 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .stamp-box-cell { height: 13mm; background: #fff; }
 .biko-r-td {
   width: 44mm; vertical-align: top;
-  padding: 1.5mm 2mm; font-size: 6.5pt; line-height: 1.7;
+  padding: 1.5mm 2mm; font-size: 7pt; line-height: 1.7;
   color: #555; background: #fafafa;
 }
 
 /* ---- 出荷日/便 ---- */
 .shipday-label-td {
-  width: 14mm; font-size: 9pt; font-weight: bold;
+  width: 14mm; font-size: 10pt; font-weight: bold;
   text-align: center; border-right: 2px solid #888;
   vertical-align: middle; line-height: 1.4; padding: 1mm 0;
   background: #f0f0f0; color: #333;
 }
 .shipday-body-td {
-  font-size: 11pt; vertical-align: middle; text-align: center;
+  font-size: 13pt; vertical-align: middle; text-align: center;
   height: 12mm; padding: 0 3mm; white-space: nowrap;
   color: #222;
 }
@@ -313,13 +313,13 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ---- 箱種：再確認をアンバー色で警告 ---- */
 .hako-label-td {
-  width: 14mm; font-size: 10pt; font-weight: bold;
+  width: 14mm; font-size: 11pt; font-weight: bold;
   text-align: center; writing-mode: vertical-rl;
   border-right: 2px solid #888; vertical-align: middle;
   background: #f0f0f0; color: #333;
 }
 .hako-val-td {
-  width: 22mm; font-size: 13pt; font-weight: bold;
+  width: 22mm; font-size: 15pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1.5px solid #bbb; padding: 1mm;
   color: #111;
@@ -332,7 +332,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   padding: 2mm 3mm; gap: 2mm;
   background: #fff8ec;
 }
-.rekakunin-txt { font-size: 9.5pt; color: #7a4000; font-weight: bold; }
+.rekakunin-txt { font-size: 10pt; color: #7a4000; font-weight: bold; }
 .rekakunin-right { display: flex; align-items: center; gap: 2mm; flex-shrink: 0; }
 .face-circle {
   width: 11mm; height: 11mm;
@@ -347,7 +347,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .ok-box {
   border: 2px solid #1a7a1a; border-radius: 4px;
-  padding: 1.5mm 4mm; font-size: 14pt; font-weight: bold;
+  padding: 1.5mm 4mm; font-size: 15pt; font-weight: bold;
   white-space: nowrap; color: #1a7a1a; background: #f0fff0;
 }
 
@@ -427,35 +427,29 @@ function parseQR(text) {
 function buildSlipHTML(data, type) {
   const today = new Date();
   const iraDate = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
-  let title, qty, boxCount;
+  let qty, boxCount;
   if (type === 'full') {
-    title = '指示品依頼書【整数箱】';
     qty = data.capacity; boxCount = data.fullBoxes;
   } else {
-    title = '指示品依頼書【端数箱】';
     qty = data.fraction; boxCount = 1;
   }
 
   const d1 = data.p1.split('');
   const d2 = data.p2.split('');
-
-  // 品番の桁td
   const dTd1 = d1.map(c => `<td class="dc">${c}</td>`).join('');
   const dTd2 = d2.map(c => `<td class="dc">${c}</td>`).join('');
-  // チェック○のtd（幅をdc=7mmと同じにする）
   const cTd1 = d1.map(() => `<td class="cc"><div class="ck-circle"><span class="ck-dots">··</span></div></td>`).join('');
   const cTd2 = d2.map(() => `<td class="cc"><div class="ck-circle"><span class="ck-dots">··</span></div></td>`).join('');
 
   return `
 <div class="slip">
 
-<!-- ヘッダー：タイトル + 工程フロー（上段ラベル・下段押印） -->
+<!-- ヘッダー -->
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
     <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
     <td style="padding:0; border-bottom:1px solid #000;">
-      <!-- 上段：ラベル＋矢印行 -->
       <table class="flow-row-table">
         <colgroup>
           <col><col style="width:8mm"><col><col style="width:8mm">
@@ -476,9 +470,8 @@ function buildSlipHTML(data, type) {
     </td>
   </tr>
   <tr>
-    <td class="hdr-title-blank"></td><!-- タイトル列の下段（空） -->
+    <td class="hdr-title-blank"></td>
     <td style="padding:0;">
-      <!-- 下段：押印スペース行 -->
       <table class="flow-row-table">
         <colgroup>
           <col><col style="width:8mm"><col><col style="width:8mm">
@@ -506,35 +499,25 @@ function buildSlipHTML(data, type) {
   <tr>
     <td class="hinban-label-td">品&nbsp;&nbsp;番</td>
     <td style="padding:0;border:none;">
-      <!--
-        ③中央寄せ：
-        10桁×8.5mm=85mm + セパレータ7mm = 92mm
-        伝票幅194mm - 品番ラベル10mm = 184mm が内部幅
-        左右スペーサーで (184-92-48)/2 ≈ 22mm ずつ確保して中央へ
-      -->
       <table class="inner-table">
         <colgroup>
-          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><!-- d1×5 -->
-          <col style="width:9mm"><!-- sep -->
-          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><!-- d2×5 -->
-          <col><!-- note：残り全幅 -->
+          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm">
+          <col style="width:9mm">
+          <col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm"><col style="width:11mm">
+          <col>
         </colgroup>
-        <!-- チェック行1：かんばん転記確認 -->
         <tr class="row-ck1">
           ${cTd1}<td class="cs"></td>${cTd2}
           <td class="cn">←かんばんから転記時に確認。</td>
         </tr>
-        <!-- 品番数字行 -->
         <tr class="row-digit" style="border-top:1px solid #000;border-bottom:1px solid #000;">
           ${dTd1}<td class="ds">－</td>${dTd2}
           <td class="dn"></td>
         </tr>
-        <!-- チェック行2：見本準備 -->
         <tr class="row-ck2">
           ${cTd1}<td class="cs"></td>${cTd2}
           <td class="cn">←見本準備時に作業者が確認。</td>
         </tr>
-        <!-- チェック行3：次工程渡し -->
         <tr class="row-ck3">
           ${cTd1}<td class="cs"></td>${cTd2}
           <td class="cn">←次工程へ渡し時に監督者が確認。</td>
@@ -546,7 +529,7 @@ function buildSlipHTML(data, type) {
 
 <!-- 依頼日 -->
 <table style="border-top:2px solid #000;">
-  <colgroup><col style="width:10mm"><col style="width:55mm"><col><!-- 備考欄：残り全幅 --></colgroup>
+  <colgroup><col style="width:10mm"><col style="width:55mm"><col></colgroup>
   <tr>
     <td class="irai-label-td">依頼日</td>
     <td class="irai-date-td">${iraDate}</td>
@@ -605,7 +588,7 @@ function buildSlipHTML(data, type) {
 
 <!-- 箱種 -->
 <table style="border-top:1px solid #000;">
-  <colgroup><col style="width:10mm"><col style="width:18mm"><col></colgroup>
+  <colgroup><col style="width:10mm"><col style="width:22mm"><col></colgroup>
   <tr>
     <td class="hako-label-td">箱&nbsp;&nbsp;種</td>
     <td class="hako-val-td">${data.boxType}</td>
@@ -667,7 +650,6 @@ function clearAll() {
 function playOK() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // 短い上昇2音：ポポン
     [880, 1320].forEach((freq, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -683,7 +665,6 @@ function playOK() {
 function playNG() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // 低い下降音：ブブッ
     [330, 220].forEach((freq, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();

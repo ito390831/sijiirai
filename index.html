@@ -114,7 +114,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 /* ===== 伝票スタイル ===== */
 .slip {
-  width: 194mm;
+  width: 734px;
   border: 2.5px solid #1a1a1a;
   border-radius: 3px;
   font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif;
@@ -358,11 +358,12 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px;
 }
 
-/* PDF用ページ：薄グレー背景で伝票を浮かせる */
+/* PDF用ページ：薄グレー背景で伝票を浮かせる（高さ固定でA4統一） */
 .pdf-page {
-  width: 210mm; min-height: 297mm;
-  padding: 8mm 8mm; background: #e8edf5;
-  display: flex; flex-direction: column; gap: 5mm;
+  width: 794px; height: 1123px;
+  padding: 30px 30px; background: #e8edf5;
+  display: flex; flex-direction: column; gap: 18px;
+  overflow: hidden;
 }
 </style>
 </head>
@@ -747,18 +748,39 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
+  // 1枚でも2枚でも必ず794×1123pxで出力し、伝票サイズを統一する
   for (let i = 0; i < slips.length; i += 2) {
     const page = document.createElement('div');
-    page.className = 'pdf-page';
-    slips.slice(i, i+2).forEach(s => { page.innerHTML += buildSlipHTML(s.data, s.type); });
+    page.style.cssText = [
+      'width:794px', 'height:1123px', 'padding:30px', 'background:#e8edf5',
+      'display:flex', 'flex-direction:column', 'gap:18px',
+      'overflow:hidden', 'box-sizing:border-box'
+    ].join(';') + ';';
+
+    // 上段伝票（常に配置）
+    const wrap1 = document.createElement('div');
+    wrap1.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
+    wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
+    page.appendChild(wrap1);
+
+    // 下段：2枚目があれば伝票、なければ空白で高さを固定
+    const wrap2 = document.createElement('div');
+    wrap2.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
+    if (slips[i + 1]) {
+      wrap2.innerHTML = buildSlipHTML(slips[i + 1].data, slips[i + 1].type);
+    }
+    page.appendChild(wrap2);
+
     container.appendChild(page);
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 200));
+
     const canvas = await html2canvas(page, {
-      scale: 3,
+      scale: 2,
       useCORS: true,
       logging: false,
       windowWidth: 794,
-      width: 794
+      width: 794,
+      height: 1123
     });
     if (i > 0) pdf.addPage();
     pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);

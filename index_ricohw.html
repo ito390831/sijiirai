@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>指示品依頼書システム</title>
+<title>指示品依頼書システム（RICOH版）</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -16,6 +16,11 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .app-title {
   color: #e0e0e0; font-size: 18px; font-weight: bold;
   text-align: center; padding: 12px 0 16px; letter-spacing: 0.05em;
+}
+.app-badge {
+  display: inline-block; background: #f59e0b; color: #1a1a2e;
+  font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px;
+  margin-left: 6px; vertical-align: middle;
 }
 .btn-scan-main {
   width: 100%; padding: 18px;
@@ -56,7 +61,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .btn-row { display: flex; gap: 8px; margin-top: 12px; }
 .btn-pdf {
   flex: 1; padding: 14px;
-  background: #dc2626; color: #fff;
+  background: #f59e0b; color: #1a1a2e;
   font-size: 15px; font-weight: bold;
   border: none; border-radius: 10px; cursor: pointer;
 }
@@ -107,9 +112,9 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   font-size: 13px; border: none; border-radius: 10px; cursor: pointer;
 }
 
-/* ===== PDF生成コンテナ ===== */
+/* ===== PDF生成コンテナ（RICOH版：794×1123px固定） ===== */
 #pdf-container {
-  position: fixed; left: -9999px; top: 0; background: #fff;
+  position: fixed; left: -9999px; top: 0;
   width: 794px;
 }
 
@@ -359,7 +364,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px;
 }
 
-/* PDF用ページ：薄グレー背景で伝票を浮かせる（高さ固定でA4統一） */
+/* RICOH版：PDF用ページ 794×1123px固定（A4@96dpi） */
 .pdf-page {
   width: 794px; height: 1123px;
   padding: 30px 30px; background: #e8edf5;
@@ -372,7 +377,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 <!-- ===== アプリUI ===== -->
 <div id="app">
-  <div class="app-title">📋 指示品依頼書システム</div>
+  <div class="app-title">📋 指示品依頼書システム<span class="app-badge">RICOH版</span></div>
   <button class="btn-scan-main" id="btn-scan" onclick="toggleScanner()">
     <span id="scan-icon">📷</span>
     <span id="scan-label">QRコードをスキャン開始</span>
@@ -380,7 +385,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   <div id="status">スキャン待機中...</div>
   <div id="slip-list"></div>
   <div class="btn-row" id="action-btns" style="display:none">
-    <button class="btn-pdf" onclick="generatePDF()">📄 PDFを出力</button>
+    <button class="btn-pdf" onclick="generatePDF()">🖨️ RICOHで印刷</button>
     <button class="btn-clear" onclick="clearAll()">🗑️ クリア</button>
   </div>
 </div>
@@ -433,26 +438,21 @@ function parseQR_A(text) {
 // [16:22]=納番, [26:29]=箱連番, [29:42]=品番13桁, [42:50]=納入日, [50:57]=数量
 function parseQR_B(text) {
   try {
-    // スペースが[7:11]と[22:26]にある → 判別キー
     if (text.length < 57) return null;
     if (text.substring(7,11).trim() !== '' || text.substring(22,26).trim() !== '') return null;
     const slipNo      = text.substring(16, 22).trim();
-    const renban      = text.substring(26, 29);          // 箱連番 "001","010"...
-    const partRaw     = text.substring(29, 42);          // 13桁
-    const dateStr     = text.substring(42, 50);          // YYYYMMDD
-    const qty         = parseInt(text.substring(50, 57), 10); // 数量
+    const renban      = text.substring(26, 29);
+    const partRaw     = text.substring(29, 42);
+    const dateStr     = text.substring(42, 50);
+    const qty         = parseInt(text.substring(50, 57), 10);
     if (isNaN(qty) || !/^\d{8}$/.test(dateStr)) return null;
     const m = parseInt(dateStr.substring(4,6));
     const d = parseInt(dateStr.substring(6,8));
     const deliveryDateStr = `${m}月${d}日`;
-    // 品番: prefix(1) + p1(5) + p2(5) + suffix(2) = 13桁
-    // 表示用: p1=先頭6桁(prefix+5), p2=次の5桁
-    // かんばん上の表示に合わせて p1=partRaw[0:6], p2=partRaw[6:11]
     const p1 = partRaw.substring(1, 6);   // "GH999" (先頭1桁=prefix除外)
     const p2 = partRaw.substring(6, 11);  // "02720"
     const suffix = partRaw.substring(11, 13); // "00"
     const partNo = partRaw;
-    // 新フォーマットは1スキャン=1箱。整数箱=qty×1箱、端数なし
     return { fmt: 'B', deliveryDateStr, slipNo, renban: parseInt(renban,10),
              partRaw, p1, p2, suffix, partNo,
              totalQty: qty, capacity: qty, boxType: '',
@@ -461,10 +461,12 @@ function parseQR_B(text) {
 }
 
 // フォーマットC: 新フォーマット2（[23:26]が3スペース）
+// [16:23]=納番(7桁), [26:29]=連番, [29:42]=品番13桁, [42:50]=納入日, [50:57]=数量
 function parseQR_C(text) {
   try {
     if (text.length < 57) return null;
-    if (text.substring(23,26) !== '   ') return null;
+    if (text.substring(23,26).trim() !== '') return null;
+    // [7:11]がスペースでないこと（BとCを区別）
     if (text.substring(7,11).trim() === '') return null;
     const slipNo  = text.substring(16, 23).trim();
     const renban  = text.substring(26, 29);
@@ -475,11 +477,12 @@ function parseQR_C(text) {
     const m = parseInt(dateStr.substring(4,6));
     const d = parseInt(dateStr.substring(6,8));
     const deliveryDateStr = `${m}月${d}日`;
-    const p1 = partRaw.substring(1, 6);
+    const p1 = partRaw.substring(1, 6);   // prefix(1桁)除外
     const p2 = partRaw.substring(6, 11);
     const suffix = partRaw.substring(11, 13);
+    const partNo = partRaw;
     return { fmt: 'C', deliveryDateStr, slipNo, renban: parseInt(renban,10),
-             partRaw, p1, p2, suffix, partNo: partRaw,
+             partRaw, p1, p2, suffix, partNo,
              totalQty: qty, capacity: qty, boxType: '',
              fullBoxes: 1, fraction: 0 };
   } catch(e) { return null; }
@@ -487,10 +490,12 @@ function parseQR_C(text) {
 
 function parseQR(text) {
   if (text.length >= 57) {
+    // フォーマットB: [7:11]と[22:26]が4スペース
     if (text.substring(7,11) === '    ' && text.substring(22,26) === '    ') {
       const b = parseQR_B(text);
       if (b) return b;
     }
+    // フォーマットC: [23:26]が3スペース、[7:11]は数字
     if (text.substring(23,26) === '   ' && text.substring(7,11).trim() !== '') {
       const c = parseQR_C(text);
       if (c) return c;
@@ -698,7 +703,6 @@ let scanInterval = null;
 
 function addSlips(data) {
   if (data.fmt === 'B' || data.fmt === 'C') {
-    // 新フォーマット: 1スキャン=1伝票
     slips.push({ data, type: 'full' });
   } else {
     if (data.fullBoxes > 0) slips.push({ data, type: 'full' });
@@ -825,14 +829,14 @@ function startScan(video) {
   }, 200);
 }
 
-// ===== PDF生成 =====
+// ===== PDF生成（RICOH版：794×1123px固定 → Web Share API） =====
 async function generatePDF() {
   if (slips.length === 0) { alert('伝票がありません'); return; }
   document.getElementById('status').textContent = 'PDF生成中...';
   const container = document.getElementById('pdf-container');
   container.innerHTML = '';
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
 
   // 1枚でも2枚でも必ず794×1123pxで出力し、伝票サイズを統一する
   for (let i = 0; i < slips.length; i += 2) {
@@ -843,13 +847,11 @@ async function generatePDF() {
       'overflow:hidden', 'box-sizing:border-box'
     ].join(';') + ';';
 
-    // 上段伝票（常に配置）
     const wrap1 = document.createElement('div');
     wrap1.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
     wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
     page.appendChild(wrap1);
 
-    // 下段：2枚目があれば伝票、なければ空白で高さを固定
     const wrap2 = document.createElement('div');
     wrap2.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
     if (slips[i + 1]) {
@@ -868,14 +870,37 @@ async function generatePDF() {
       width: 794,
       height: 1123
     });
-    if (i > 0) pdf.addPage();
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);
+    if (i > 0) pdf.addPage([794, 1123], 'portrait');
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 794, 1123);
     container.innerHTML = '';
   }
 
   const now = new Date();
-  pdf.save(`指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`);
-  document.getElementById('status').textContent = '✅ PDF出力完了！';
+  const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
+  const pdfBlob = pdf.output('blob');
+
+  // Web Share API（RICOH カンタン入出力対応）
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
+    try {
+      await navigator.share({
+        files: [new File([pdfBlob], filename, { type: 'application/pdf' })],
+        title: '指示品依頼書',
+      });
+      document.getElementById('status').textContent = '✅ 共有完了！';
+    } catch(e) {
+      if (e.name !== 'AbortError') {
+        // 共有キャンセル以外はダウンロードにフォールバック
+        pdf.save(filename);
+        document.getElementById('status').textContent = '✅ PDF保存完了！';
+      } else {
+        document.getElementById('status').textContent = '共有をキャンセルしました。';
+      }
+    }
+  } else {
+    // Web Share API非対応端末はダウンロード
+    pdf.save(filename);
+    document.getElementById('status').textContent = '✅ PDF出力完了！';
+  }
 }
 </script>
 </body>

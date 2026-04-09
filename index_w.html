@@ -453,10 +453,11 @@ function parseQR_B(text) {
     const suffix = partRaw.substring(11, 13); // "00"
     const partNo = partRaw;
     // 新フォーマットは1スキャン=1箱。整数箱=qty×1箱、端数なし
-    return { fmt: 'B', deliveryDateStr, slipNo, renban: parseInt(renban,10),
+    const renbanNum = parseInt(renban, 10);
+    return { fmt: 'B', deliveryDateStr, slipNo, renban: renbanNum,
              partRaw, p1, p2, suffix, partNo,
-             totalQty: qty, capacity: qty, boxType: '',
-             fullBoxes: 1, fraction: 0 };
+             totalQty: qty * renbanNum, capacity: qty, boxType: '',
+             fullBoxes: renbanNum, fraction: 0 };
   } catch(e) { return null; }
 }
 
@@ -478,10 +479,11 @@ function parseQR_C(text) {
     const p1 = partRaw.substring(1, 6);
     const p2 = partRaw.substring(6, 11);
     const suffix = partRaw.substring(11, 13);
-    return { fmt: 'C', deliveryDateStr, slipNo, renban: parseInt(renban,10),
+    const renbanNumC = parseInt(renban, 10);
+    return { fmt: 'C', deliveryDateStr, slipNo, renban: renbanNumC,
              partRaw, p1, p2, suffix, partNo: partRaw,
-             totalQty: qty, capacity: qty, boxType: '',
-             fullBoxes: 1, fraction: 0 };
+             totalQty: qty * renbanNumC, capacity: qty, boxType: '',
+             fullBoxes: renbanNumC, fraction: 0 };
   } catch(e) { return null; }
 }
 
@@ -505,7 +507,7 @@ function buildSlipHTML(data, type) {
   const iraDate = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
   let qty, boxCount;
   if (data.fmt === 'B' || data.fmt === 'C') {
-    qty = data.totalQty; boxCount = 1;
+    qty = data.capacity; boxCount = data.fullBoxes;
   } else if (type === 'full') {
     qty = data.capacity; boxCount = data.fullBoxes;
   } else {
@@ -712,7 +714,7 @@ function renderSlipList() {
   document.getElementById('slip-list').innerHTML = slips.map((s, i) => {
     const isFull = s.type === 'full';
     const isB = s.data.fmt === 'B' || s.data.fmt === 'C';
-    const qty = isB ? s.data.totalQty : (isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction);
+    const qty = isB ? s.data.capacity * s.data.fullBoxes : (isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction);
     const badge = isB ? `かんばん${String(s.data.renban).padStart(3,'0')}` : (isFull ? '整数箱' : '端数箱');
     const badgeCls = isB ? 'kanban' : (isFull ? '' : 'frac');
     const partDisp = isB ? `${s.data.p1}-${s.data.p2}` : `${s.data.p1}－${s.data.p2}`;

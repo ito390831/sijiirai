@@ -121,7 +121,6 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ===== 伝票スタイル ===== */
 .slip {
   width: 734px;
-  max-height: 522px; /* ページ高さの半分に収める */
   border: 2.5px solid #1a1a1a;
   border-radius: 3px;
   font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif;
@@ -178,13 +177,13 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .flow-stamp-td {
   text-align: center; vertical-align: middle;
-  height: 18mm; padding: 0;
+  height: 12mm; padding: 0;
   background: #fafafa;
 }
 .flow-arr-stamp-td {
   width: 10mm;
   border-left: none !important; border-right: none !important;
-  height: 18mm;
+  height: 12mm;
   background: #fafafa;
 }
 
@@ -204,7 +203,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .pad-cell { border: none !important; }
 .dc {
-  width: 11mm; height: 14mm;
+  width: 11mm; height: 12mm;
   text-align: center; vertical-align: middle;
   font-size: 18pt; font-weight: bold;
   border: 1.5px solid #888;
@@ -223,7 +222,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   color: #666; font-style: italic;
 }
 .cc {
-  width: 11mm; height: 10mm;
+  width: 11mm; height: 8mm;
   text-align: center; vertical-align: middle;
   border: none;
   background: #fffbe6;
@@ -262,7 +261,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .irai-date-td {
   font-size: 16pt; font-weight: bold; text-align: center;
-  vertical-align: middle; height: 13mm;
+  vertical-align: middle; height: 11mm;
   border-right: 1.5px solid #bbb;
   width: 55mm; color: #111;
 }
@@ -286,7 +285,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .qty-body-td {
   font-size: 28pt; font-weight: bold;
   text-align: center; vertical-align: middle;
-  height: 22mm; border-right: 1.5px solid #bbb;
+  height: 18mm; border-right: 1.5px solid #bbb;
   color: #111; letter-spacing: 1px;
 }
 .qty-num { text-decoration: underline; }
@@ -297,7 +296,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   padding: 0 0.5mm;
   background: #f5f5f5; color: #444;
 }
-.stamp-box-cell { height: 13mm; background: #fff; }
+.stamp-box-cell { height: 10mm; background: #fff; }
 .biko-r-td {
   width: 44mm; vertical-align: top;
   padding: 1.5mm 2mm; font-size: 7pt; line-height: 1.7;
@@ -313,7 +312,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .shipday-body-td {
   font-size: 13pt; vertical-align: middle; text-align: center;
-  height: 12mm; padding: 0 3mm; white-space: nowrap;
+  height: 10mm; padding: 0 3mm; white-space: nowrap;
   color: #222;
 }
 .ul { border-bottom: 2px solid #333; display: inline-block; min-width: 10mm; }
@@ -329,7 +328,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   width: 22mm; font-size: 15pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1.5px solid #bbb; padding: 1mm;
-  color: #111; height: 12mm;
+  color: #111; height: 10mm;
 }
 .rekakunin-td { vertical-align: middle; padding: 2mm 3mm; }
 .rekakunin-inner {
@@ -884,8 +883,29 @@ async function generatePDF() {
   }
 
   const now = new Date();
-  pdf.save(`指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`);
-  document.getElementById('status').textContent = '✅ PDF出力完了！';
+  const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
+  const pdfBlob = pdf.output('blob');
+
+  // Web Share API（RICOH カンタン入出力対応）
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
+    try {
+      await navigator.share({
+        files: [new File([pdfBlob], filename, { type: 'application/pdf' })],
+        title: '指示品依頼書',
+      });
+      document.getElementById('status').textContent = '✅ 共有完了！';
+    } catch(e) {
+      if (e.name !== 'AbortError') {
+        pdf.save(filename);
+        document.getElementById('status').textContent = '✅ PDF保存完了！';
+      } else {
+        document.getElementById('status').textContent = '共有をキャンセルしました。';
+      }
+    }
+  } else {
+    pdf.save(filename);
+    document.getElementById('status').textContent = '✅ PDF出力完了！';
+  }
 }
 </script>
 </body>

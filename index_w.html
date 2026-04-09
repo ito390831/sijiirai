@@ -116,6 +116,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ===== 伝票スタイル ===== */
 .slip {
   width: 734px;
+  max-height: 522px; /* ページ高さの半分に収める */
   border: 2.5px solid #1a1a1a;
   border-radius: 3px;
   font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif;
@@ -836,24 +837,27 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // 1枚でも2枚でも必ず794×1123pxで出力し、伝票サイズを統一する
+  // ページ固定サイズ: 794×1123px (A4@96dpi)
+  // 伝票1枚の固定高さ: padding30×2 + gap18 = 78px余白 → 伝票=(1123-78)/2=522px
+  const PAGE_W = 794, PAGE_H = 1123;
+  const PADDING = 30, GAP = 18;
+  const SLIP_H = Math.floor((PAGE_H - PADDING * 2 - GAP) / 2); // 522px
+
   for (let i = 0; i < slips.length; i += 2) {
     const page = document.createElement('div');
-    page.style.cssText = [
-      'width:794px', 'height:1123px', 'padding:30px', 'background:#e8edf5',
-      'display:flex', 'flex-direction:column', 'gap:18px',
-      'overflow:hidden', 'box-sizing:border-box'
-    ].join(';') + ';';
+    page.style.cssText = `width:${PAGE_W}px;height:${PAGE_H}px;padding:${PADDING}px;` +
+      `background:#e8edf5;display:flex;flex-direction:column;gap:${GAP}px;` +
+      `overflow:hidden;box-sizing:border-box;`;
 
-    // 上段伝票（常に配置）
+    // 上段：固定高さのラッパーに伝票を収める
     const wrap1 = document.createElement('div');
-    wrap1.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
+    wrap1.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
     wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
     page.appendChild(wrap1);
 
-    // 下段：2枚目があれば伝票、なければ空白で高さを固定
+    // 下段：2枚目があれば伝票、なければ空白（高さは同じ）
     const wrap2 = document.createElement('div');
-    wrap2.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
+    wrap2.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
     if (slips[i + 1]) {
       wrap2.innerHTML = buildSlipHTML(slips[i + 1].data, slips[i + 1].type);
     }
@@ -866,9 +870,9 @@ async function generatePDF() {
       scale: 2,
       useCORS: true,
       logging: false,
-      windowWidth: 794,
-      width: 794,
-      height: 1123
+      windowWidth: PAGE_W,
+      width: PAGE_W,
+      height: PAGE_H
     });
     if (i > 0) pdf.addPage();
     pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);

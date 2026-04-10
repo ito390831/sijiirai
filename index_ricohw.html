@@ -845,7 +845,7 @@ async function generatePDF() {
   const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
   const SLIP_NATURAL_W = 734;
   const AVAILABLE_W = PAGE_W - PADDING * 2;
-  const SCALE = Math.min(SLIP_SLOT / 484, AVAILABLE_W / SLIP_NATURAL_W);
+  const SCALE = Math.min(SLIP_SLOT / 510, AVAILABLE_W / SLIP_NATURAL_W);
 
   for (let i = 0; i < slips.length; i += PER_PAGE) {
     const page = document.createElement('div');

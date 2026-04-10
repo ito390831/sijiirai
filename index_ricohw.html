@@ -840,31 +840,34 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
 
-  // ページ固定サイズ: 794×1123px (A4@96dpi)
-  // 伝票1枚の固定高さ: padding30×2 + gap18 = 78px余白 → 伝票=(1123-78)/2=522px
   const PAGE_W = 794, PAGE_H = 1123;
-  const PADDING = 30, GAP = 18;
-  const SLIP_H = Math.floor((PAGE_H - PADDING * 2 - GAP) / 2); // 522px
+  const PADDING = 15, GAP = 8, PER_PAGE = 4;
+  const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
+  const SLIP_NATURAL_W = 734;
+  const AVAILABLE_W = PAGE_W - PADDING * 2;
+  const SCALE = Math.min(SLIP_SLOT / 484, AVAILABLE_W / SLIP_NATURAL_W);
 
-  for (let i = 0; i < slips.length; i += 2) {
+  for (let i = 0; i < slips.length; i += PER_PAGE) {
     const page = document.createElement('div');
     page.style.cssText = `width:${PAGE_W}px;height:${PAGE_H}px;padding:${PADDING}px;` +
       `background:#e8edf5;display:flex;flex-direction:column;gap:${GAP}px;` +
       `overflow:hidden;box-sizing:border-box;`;
 
-    // 上段：固定高さのラッパーに伝票を収める
-    const wrap1 = document.createElement('div');
-    wrap1.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
-    wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
-    page.appendChild(wrap1);
+    for (let j = 0; j < PER_PAGE; j++) {
+      const slot = document.createElement('div');
+      slot.style.cssText = `width:${AVAILABLE_W}px;height:${SLIP_SLOT}px;` +
+        `overflow:hidden;flex-shrink:0;position:relative;`;
 
-    // 下段：2枚目があれば伝票、なければ空白（高さは同じ）
-    const wrap2 = document.createElement('div');
-    wrap2.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
-    if (slips[i + 1]) {
-      wrap2.innerHTML = buildSlipHTML(slips[i + 1].data, slips[i + 1].type);
+      const inner = document.createElement('div');
+      inner.style.cssText = `transform:scale(${SCALE});transform-origin:top left;` +
+        `position:absolute;top:0;left:0;`;
+
+      if (slips[i + j]) {
+        inner.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
+      }
+      slot.appendChild(inner);
+      page.appendChild(slot);
     }
-    page.appendChild(wrap2);
 
     container.appendChild(page);
     await new Promise(r => setTimeout(r, 200));
@@ -886,7 +889,6 @@ async function generatePDF() {
   const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
   const pdfBlob = pdf.output('blob');
 
-  // Web Share API（RICOH カンタン入出力対応）
   if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
     try {
       await navigator.share({

@@ -41,74 +41,78 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 #pdf-container { position: fixed; left: -9999px; top: 0; width: 794px; }
 
 /* ==================================================
-   伝票CSS（px完全固定）
+   伝票CSS（プレビュー完全準拠・px固定）
    ページ794×1123px、PAD12px、GAP6px、4枚
-   SLIP_W=770px  SLIP_H=270px
+   SLIP_W=770px  SLIP_H=270px（1081÷4=270.25）
    ================================================== */
 .slip { width: 770px; border: 2px solid #1a1a1a; border-radius: 2px; font-family: 'Meiryo','MS Gothic','Yu Gothic',sans-serif; background: #fff; overflow: hidden; }
 .slip table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .slip td { border: 1px solid #bbb; vertical-align: middle; padding: 0; }
 
-/* ヘッダー */
-.hdr-title { font-size: 11pt; font-weight: bold; text-align: center; padding: 2px 1px; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.4; background: #1a3a6b; color: #fff; height: 32px; }
+/* ヘッダー（タイトル列幅110px、プレビューの42mm相当） */
+.hdr-title { font-size: 9.5pt; font-weight: bold; text-align: center; padding: 1px; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.3; background: #1a3a6b; color: #fff; height: 18px; }
 .hdr-title-blank { background: #1a3a6b; border-right: 2px solid #1a3a6b; border-top: none !important; padding: 0; }
 .flow-row-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.flow-lbl-td { text-align: center; font-size: 7pt; font-weight: bold; vertical-align: middle; height: 22px; padding: 1px 0; border-bottom: 1px solid #4a6fa5; background: #dce8f8; color: #1a3a6b; }
-.flow-arr-td { width: 18px; text-align: center; vertical-align: middle; font-size: 10pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1px solid #4a6fa5; background: #dce8f8; padding: 0; height: 22px; }
-.flow-stamp-td { height: 22px; background: #fafafa; }
-.flow-arr-stamp-td { width: 18px; border-left: none !important; border-right: none !important; height: 22px; background: #fafafa; }
+/* flow-lbl: プレビュー10mm×0.464=18px */
+.flow-lbl-td { text-align: center; font-size: 6.5pt; font-weight: bold; vertical-align: middle; height: 18px; padding: 1px 0; border-bottom: 1px solid #4a6fa5; background: #dce8f8; color: #1a3a6b; }
+.flow-arr-td { width: 14px; text-align: center; vertical-align: middle; font-size: 8pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1px solid #4a6fa5; background: #dce8f8; padding: 0; height: 18px; }
+/* flow-stamp: プレビュー20mm×0.464=37px（捺印スペース） */
+.flow-stamp-td { height: 37px; background: #fafafa; }
+.flow-arr-stamp-td { width: 14px; border-left: none !important; border-right: none !important; height: 37px; background: #fafafa; }
 
-/* 品番 */
-.hinban-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; letter-spacing: 2px; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+/* 品番（hinban-label 22px幅） */
+.hinban-label-td { width: 22px; font-size: 6.5pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; letter-spacing: 2px; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
 .inner-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.dc { width: 30px; height: 30px; text-align: center; vertical-align: middle; font-size: 13pt; font-weight: bold; border: 1px solid #888; background: #fff; color: #111; }
-.ds { width: 20px; text-align: center; vertical-align: middle; font-size: 13pt; font-weight: bold; border: none; color: #555; }
-.dn { text-align: left; vertical-align: middle; font-size: 6pt; padding-left: 4px; white-space: nowrap; border: none; color: #666; font-style: italic; }
-.cc { width: 30px; height: 18px; text-align: center; vertical-align: middle; border: none; background: #fffbe6; }
-.cs { width: 20px; border: none; background: #fffbe6; }
-.cn { text-align: left; vertical-align: middle; font-size: 6pt; padding-left: 4px; white-space: nowrap; border: none; color: #666; font-style: italic; background: #fffbe6; }
-.ck-circle { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border: 1px solid #555; border-radius: 50%; background: #fff; }
-.ck-dots { font-size: 6pt; line-height: 1; margin-bottom: 3px; color: #333; }
+/* dc: プレビュー11mm×0.464=21px → height確保、width固定 */
+.dc { width: 28px; height: 21px; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: bold; border: 1px solid #888; background: #fff; color: #111; }
+.ds { width: 18px; text-align: center; vertical-align: middle; font-size: 11pt; font-weight: bold; border: none; color: #555; }
+.dn { text-align: left; vertical-align: middle; font-size: 5.5pt; padding-left: 3px; white-space: nowrap; border: none; color: #666; font-style: italic; }
+/* cc: プレビュー11mm×0.464=11px（チェック行） */
+.cc { width: 28px; height: 11px; text-align: center; vertical-align: middle; border: none; background: #fffbe6; }
+.cs { width: 18px; border: none; background: #fffbe6; }
+.cn { text-align: left; vertical-align: middle; font-size: 5.5pt; padding-left: 3px; white-space: nowrap; border: none; color: #666; font-style: italic; background: #fffbe6; }
+.ck-circle { display: inline-flex; align-items: center; justify-content: center; width: 9px; height: 9px; border: 1px solid #555; border-radius: 50%; background: #fff; }
+.ck-dots { font-size: 5pt; line-height: 1; margin-bottom: 1px; color: #333; }
 .row-ck1 td { border-bottom: 1px solid #ddd; }
 .row-digit td.dc { border: 1px solid #666; }
 .row-ck2 td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
 .row-ck3 td { border-top: none; }
 
-/* 依頼日 */
-.irai-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 2px solid #888; background: #f0f0f0; color: #333; }
-.irai-date-td { font-size: 11pt; font-weight: bold; text-align: center; vertical-align: middle; height: 26px; border-right: 1px solid #bbb; width: 120px; color: #111; }
-.biko-td { vertical-align: top; padding: 2px 4px; font-size: 7.5pt; background: #f2f9f2; }
-.biko-title { font-weight: bold; font-size: 8pt; margin-bottom: 1px; color: #2a6a2a; }
+/* 依頼日（プレビュー14mm×0.464=24px） */
+.irai-label-td { width: 22px; font-size: 6.5pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 2px solid #888; background: #f0f0f0; color: #333; }
+.irai-date-td { font-size: 9pt; font-weight: bold; text-align: center; vertical-align: middle; height: 24px; border-right: 1px solid #bbb; width: 110px; color: #111; }
+.biko-td { vertical-align: top; padding: 2px 3px; font-size: 6.5pt; background: #f2f9f2; }
+.biko-title { font-weight: bold; font-size: 7pt; margin-bottom: 1px; color: #2a6a2a; }
 
-/* 数量 */
-.qty-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
-.qty-body-td { font-size: 20pt; font-weight: bold; text-align: center; vertical-align: middle; height: 40px; border-right: 1px solid #bbb; color: #111; }
+/* 数量（プレビュー20mm×0.464=35px） */
+.qty-label-td { width: 22px; font-size: 6.5pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+.qty-body-td { font-size: 17pt; font-weight: bold; text-align: center; vertical-align: middle; height: 35px; border-right: 1px solid #bbb; color: #111; }
 .qty-num { text-decoration: underline; }
-.stamp-td { width: 110px; vertical-align: top; padding: 0; }
-.stamp-lbl-cell { text-align: center; font-size: 6pt; font-weight: bold; height: 18px; border-bottom: 1px solid #bbb; vertical-align: middle; padding: 0; background: #f5f5f5; color: #444; }
-.stamp-box-cell { height: 22px; background: #fff; }
-.biko-r-td { width: 110px; vertical-align: top; padding: 2px 3px; font-size: 6pt; line-height: 1.6; color: #555; background: #fafafa; }
+.stamp-td { width: 108px; vertical-align: top; padding: 0; }
+.stamp-lbl-cell { text-align: center; font-size: 5.5pt; font-weight: bold; height: 14px; border-bottom: 1px solid #bbb; vertical-align: middle; padding: 0; background: #f5f5f5; color: #444; }
+.stamp-box-cell { height: 21px; background: #fff; }
+.biko-r-td { width: 108px; vertical-align: top; padding: 2px 3px; font-size: 5.5pt; line-height: 1.5; color: #555; background: #fafafa; }
 
-/* 出荷日 */
-.shipday-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; border-right: 2px solid #888; vertical-align: middle; line-height: 1.3; padding: 1px 0; background: #f0f0f0; color: #333; }
-.shipday-body-td { font-size: 9pt; vertical-align: middle; text-align: center; height: 22px; padding: 0 4px; white-space: nowrap; color: #222; }
-.ul { border-bottom: 1px solid #333; display: inline-block; min-width: 18px; }
+/* 出荷日（プレビュー13mm×0.464=22px） */
+.shipday-label-td { width: 22px; font-size: 6.5pt; font-weight: bold; text-align: center; border-right: 2px solid #888; vertical-align: middle; line-height: 1.2; padding: 1px 0; background: #f0f0f0; color: #333; }
+.shipday-body-td { font-size: 8pt; vertical-align: middle; text-align: center; height: 22px; padding: 0 3px; white-space: nowrap; color: #222; }
+.ul { border-bottom: 1px solid #333; display: inline-block; min-width: 16px; }
 
-/* 箱種 */
-.hako-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
-.hako-val-td { width: 50px; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 1px solid #bbb; padding: 1px; color: #111; height: 22px; }
-.rekakunin-td { vertical-align: middle; padding: 2px 4px; }
+/* 箱種（プレビュー22mmは再確認含む、×0.464=37px） */
+.hako-label-td { width: 22px; font-size: 6.5pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+.hako-val-td { width: 46px; font-size: 9pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 1px solid #bbb; padding: 1px; color: #111; height: 37px; }
+.rekakunin-td { vertical-align: middle; padding: 2px 3px; }
 .rekakunin-inner { border: 1.5px solid #c87000; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; padding: 2px 4px; gap: 2px; background: #fff8ec; }
-.rekakunin-txt { font-size: 7.5pt; color: #7a4000; font-weight: bold; }
+.rekakunin-txt { font-size: 7pt; color: #7a4000; font-weight: bold; }
 .rekakunin-right { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.face-circle { width: 18px; height: 18px; border: 1.5px solid #c87000; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; }
-.face-dots { font-size: 7pt; color: #7a4000; line-height: 1; margin-bottom: 3px; letter-spacing: 1px; }
-.ok-box { border: 1.5px solid #1a7a1a; border-radius: 3px; padding: 1px 6px; font-size: 10pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
+.face-circle { width: 16px; height: 16px; border: 1.5px solid #c87000; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; }
+.face-dots { font-size: 6.5pt; color: #7a4000; line-height: 1; margin-bottom: 2px; letter-spacing: 1px; }
+.ok-box { border: 1.5px solid #1a7a1a; border-radius: 3px; padding: 1px 5px; font-size: 9pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
 
 /* フッター */
-.slip-footer { text-align: center; font-size: 7.5pt; font-weight: bold; padding: 3px 0; border-top: 1.5px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; }
+.slip-footer { text-align: center; font-size: 6.5pt; font-weight: bold; padding: 2px 0; border-top: 1.5px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; }
 
-/* PDFページ: 794×1123px、PAD12px、GAP6px */
+/* PDFページ: 794×1123px、PAD12px、GAP6px、4枚×270px=1080px ✓ */
 .pdf-page { width: 794px; height: 1123px; padding: 12px; background: #e8edf5; display: flex; flex-direction: column; gap: 6px; overflow: hidden; box-sizing: border-box; }
 </style>
 </head>
@@ -196,7 +200,7 @@ function buildSlipHTML(data, type) {
 <tr>
   <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${label}】</td>
   <td style="padding:0;border-bottom:1px solid #000;">
-    <table class="flow-row-table"><colgroup><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col></colgroup>
+    <table class="flow-row-table"><colgroup><col><col style="width:14px"><col><col style="width:14px"><col><col style="width:14px"><col><col style="width:14px"><col></colgroup>
     <tr>
       <td class="flow-lbl-td">依頼者</td><td class="flow-arr-td">➡</td>
       <td class="flow-lbl-td">監督者</td><td class="flow-arr-td">➡</td>
@@ -209,7 +213,7 @@ function buildSlipHTML(data, type) {
 <tr>
   <td class="hdr-title-blank"></td>
   <td style="padding:0;">
-    <table class="flow-row-table"><colgroup><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col></colgroup>
+    <table class="flow-row-table"><colgroup><col><col style="width:14px"><col><col style="width:14px"><col><col style="width:14px"><col><col style="width:14px"><col></colgroup>
     <tr>
       <td class="flow-stamp-td"></td><td class="flow-arr-stamp-td"></td>
       <td class="flow-stamp-td"></td><td class="flow-arr-stamp-td"></td>
@@ -224,9 +228,9 @@ function buildSlipHTML(data, type) {
   <td class="hinban-label-td">品&nbsp;番</td>
   <td style="padding:0;border:none;">
     <table class="inner-table"><colgroup>
-      <col style="width:30px"><col style="width:30px"><col style="width:30px"><col style="width:30px"><col style="width:30px">
-      <col style="width:20px">
-      <col style="width:30px"><col style="width:30px"><col style="width:30px"><col style="width:30px"><col style="width:30px"><col>
+      <col style="width:28px"><col style="width:28px"><col style="width:28px"><col style="width:28px"><col style="width:28px">
+      <col style="width:18px">
+      <col style="width:28px"><col style="width:28px"><col style="width:28px"><col style="width:28px"><col style="width:28px"><col>
     </colgroup>
     <tr class="row-ck1">${cTd1}<td class="cs"></td>${cTd2}<td class="cn">←かんばんから転記時に確認。</td></tr>
     <tr class="row-digit" style="border-top:1px solid #000;border-bottom:1px solid #000;">${dTd1}<td class="ds">－</td>${dTd2}<td class="dn"></td></tr>
@@ -235,13 +239,13 @@ function buildSlipHTML(data, type) {
     </table>
   </td>
 </tr></table>
-<table style="border-top:2px solid #000;"><colgroup><col style="width:22px"><col style="width:120px"><col></colgroup>
+<table style="border-top:2px solid #000;"><colgroup><col style="width:22px"><col style="width:110px"><col></colgroup>
 <tr>
   <td class="irai-label-td">依頼日</td>
   <td class="irai-date-td">${iraDate}</td>
   <td class="biko-td"><div class="biko-title">＜備考欄＞</div><div>・顧客納入日：${data.deliveryDateStr}</div><div>・納品書番号：${data.slipNo}</div></td>
 </tr></table>
-<table style="border-top:1px solid #000;"><colgroup><col style="width:22px"><col><col style="width:110px"><col style="width:110px"></colgroup>
+<table style="border-top:1px solid #000;"><colgroup><col style="width:22px"><col><col style="width:108px"><col style="width:108px"></colgroup>
 <tr>
   <td class="qty-label-td">数&nbsp;量</td>
   <td class="qty-body-td"><span class="qty-num">${qty.toLocaleString()}個</span>&nbsp;×&nbsp;${boxCount}箱</td>
@@ -254,9 +258,9 @@ function buildSlipHTML(data, type) {
 <table style="border-top:1px solid #000;"><colgroup><col style="width:22px"><col></colgroup>
 <tr>
   <td class="shipday-label-td">出荷日/<br>便</td>
-  <td class="shipday-body-td"><span class="ul">&nbsp;&nbsp;</span>月&nbsp;<span class="ul">&nbsp;&nbsp;</span>日&nbsp;&nbsp;<span class="ul" style="min-width:18px;">&nbsp;</span>:<span class="ul" style="min-width:18px;">&nbsp;</span>&nbsp;まで&nbsp;森町便&nbsp;フタバ便</td>
+  <td class="shipday-body-td"><span class="ul">&nbsp;&nbsp;</span>月&nbsp;<span class="ul">&nbsp;&nbsp;</span>日&nbsp;&nbsp;<span class="ul" style="min-width:16px;">&nbsp;</span>:<span class="ul" style="min-width:16px;">&nbsp;</span>&nbsp;まで&nbsp;森町便&nbsp;フタバ便</td>
 </tr></table>
-<table style="border-top:1px solid #000;"><colgroup><col style="width:22px"><col style="width:50px"><col></colgroup>
+<table style="border-top:1px solid #000;"><colgroup><col style="width:22px"><col style="width:46px"><col></colgroup>
 <tr>
   <td class="hako-label-td">箱&nbsp;種</td>
   <td class="hako-val-td">${data.boxType}</td>

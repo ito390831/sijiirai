@@ -50,6 +50,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   white-space: nowrap; flex-shrink: 0;
 }
 .slip-card-badge.frac { background: #f59e0b; }
+.slip-card-badge.kanban { background: #7c3aed; }
 .slip-card-partno { font-weight: bold; color: #e2e8f0; font-size: 14px; }
 .slip-card-qty { color: #94a3b8; font-size: 12px; margin-top: 2px; }
 .btn-row { display: flex; gap: 8px; margin-top: 12px; }
@@ -171,13 +172,13 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .flow-stamp-td {
   text-align: center; vertical-align: middle;
-  height: 18mm; padding: 0;
+  height: 12mm; padding: 0;
   background: #fafafa;
 }
 .flow-arr-stamp-td {
   width: 10mm;
   border-left: none !important; border-right: none !important;
-  height: 18mm;
+  height: 12mm;
   background: #fafafa;
 }
 
@@ -197,7 +198,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .pad-cell { border: none !important; }
 .dc {
-  width: 11mm; height: 14mm;
+  width: 11mm; height: 12mm;
   text-align: center; vertical-align: middle;
   font-size: 18pt; font-weight: bold;
   border: 1.5px solid #888;
@@ -216,7 +217,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   color: #666; font-style: italic;
 }
 .cc {
-  width: 11mm; height: 10mm;
+  width: 11mm; height: 8mm;
   text-align: center; vertical-align: middle;
   border: none;
   background: #fffbe6;
@@ -255,7 +256,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .irai-date-td {
   font-size: 16pt; font-weight: bold; text-align: center;
-  vertical-align: middle; height: 13mm;
+  vertical-align: middle; height: 11mm;
   border-right: 1.5px solid #bbb;
   width: 55mm; color: #111;
 }
@@ -279,7 +280,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .qty-body-td {
   font-size: 28pt; font-weight: bold;
   text-align: center; vertical-align: middle;
-  height: 22mm; border-right: 1.5px solid #bbb;
+  height: 18mm; border-right: 1.5px solid #bbb;
   color: #111; letter-spacing: 1px;
 }
 .qty-num { text-decoration: underline; }
@@ -290,7 +291,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   padding: 0 0.5mm;
   background: #f5f5f5; color: #444;
 }
-.stamp-box-cell { height: 13mm; background: #fff; }
+.stamp-box-cell { height: 10mm; background: #fff; }
 .biko-r-td {
   width: 44mm; vertical-align: top;
   padding: 1.5mm 2mm; font-size: 7pt; line-height: 1.7;
@@ -306,7 +307,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .shipday-body-td {
   font-size: 13pt; vertical-align: middle; text-align: center;
-  height: 12mm; padding: 0 3mm; white-space: nowrap;
+  height: 10mm; padding: 0 3mm; white-space: nowrap;
   color: #222;
 }
 .ul { border-bottom: 2px solid #333; display: inline-block; min-width: 10mm; }
@@ -322,7 +323,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   width: 22mm; font-size: 15pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1.5px solid #bbb; padding: 1mm;
-  color: #111;
+  color: #111; height: 10mm;
 }
 .rekakunin-td { vertical-align: middle; padding: 2mm 3mm; }
 .rekakunin-inner {
@@ -404,8 +405,10 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 <div id="pdf-container"></div>
 
 <script>
-// ===== QRパース =====
-function parseQR(text) {
+// ===== QRパース（フォーマット自動判別） =====
+
+// フォーマットA: 既存（344...）
+function parseQR_A(text) {
   try {
     const deliveryDate = text.substring(5, 13);
     const slipNo      = text.substring(15, 22);
@@ -413,6 +416,7 @@ function parseQR(text) {
     const totalQty    = parseInt(text.substring(41, 47), 10);
     const boxType     = text.substring(47, 52).trim();
     const capacity    = parseInt(text.substring(52, 57), 10);
+    if (isNaN(totalQty) || isNaN(capacity) || capacity === 0) return null;
     const m = parseInt(deliveryDate.substring(4,6));
     const d = parseInt(deliveryDate.substring(6,8));
     const deliveryDateStr = `${m}月${d}日`;
@@ -420,8 +424,81 @@ function parseQR(text) {
     const p2 = partNo.substring(5, 10);
     const fullBoxes = Math.floor(totalQty / capacity);
     const fraction  = totalQty % capacity;
-    return { deliveryDateStr, slipNo, partNo, p1, p2, totalQty, capacity, boxType, fullBoxes, fraction };
+    return { fmt: 'A', deliveryDateStr, slipNo, partNo, p1, p2,
+             totalQty, capacity, boxType, fullBoxes, fraction };
   } catch(e) { return null; }
+}
+
+// フォーマットB: 新フォーマット（スペース区切り）
+// [16:22]=納番, [26:29]=箱連番, [29:42]=品番13桁, [42:50]=納入日, [50:57]=数量
+function parseQR_B(text) {
+  try {
+    // スペースが[7:11]と[22:26]にある → 判別キー
+    if (text.length < 57) return null;
+    if (text.substring(7,11).trim() !== '' || text.substring(22,26).trim() !== '') return null;
+    const slipNo      = text.substring(16, 22).trim();
+    const renban      = text.substring(26, 29);          // 箱連番 "001","010"...
+    const partRaw     = text.substring(29, 42);          // 13桁
+    const dateStr     = text.substring(42, 50);          // YYYYMMDD
+    const qty         = parseInt(text.substring(50, 57), 10); // 数量
+    if (isNaN(qty) || !/^\d{8}$/.test(dateStr)) return null;
+    const m = parseInt(dateStr.substring(4,6));
+    const d = parseInt(dateStr.substring(6,8));
+    const deliveryDateStr = `${m}月${d}日`;
+    // 品番: prefix(1) + p1(5) + p2(5) + suffix(2) = 13桁
+    // 表示用: p1=先頭6桁(prefix+5), p2=次の5桁
+    // かんばん上の表示に合わせて p1=partRaw[0:6], p2=partRaw[6:11]
+    const p1 = partRaw.substring(1, 6);   // "GH999" (先頭1桁=prefix除外)
+    const p2 = partRaw.substring(6, 11);  // "02720"
+    const suffix = partRaw.substring(11, 13); // "00"
+    const partNo = partRaw;
+    // 新フォーマットは1スキャン=1箱。整数箱=qty×1箱、端数なし
+    const renbanNum = parseInt(renban, 10);
+    return { fmt: 'B', deliveryDateStr, slipNo, renban: renbanNum,
+             partRaw, p1, p2, suffix, partNo,
+             totalQty: qty * renbanNum, capacity: qty, boxType: '',
+             fullBoxes: renbanNum, fraction: 0 };
+  } catch(e) { return null; }
+}
+
+// フォーマットC: 新フォーマット2（[23:26]が3スペース）
+function parseQR_C(text) {
+  try {
+    if (text.length < 57) return null;
+    if (text.substring(23,26) !== '   ') return null;
+    if (text.substring(7,11).trim() === '') return null;
+    const slipNo  = text.substring(16, 23).trim();
+    const renban  = text.substring(26, 29);
+    const partRaw = text.substring(29, 42);
+    const dateStr = text.substring(42, 50);
+    const qty     = parseInt(text.substring(50, 57), 10);
+    if (isNaN(qty) || !/^\d{8}$/.test(dateStr)) return null;
+    const m = parseInt(dateStr.substring(4,6));
+    const d = parseInt(dateStr.substring(6,8));
+    const deliveryDateStr = `${m}月${d}日`;
+    const p1 = partRaw.substring(1, 6);
+    const p2 = partRaw.substring(6, 11);
+    const suffix = partRaw.substring(11, 13);
+    const renbanNumC = parseInt(renban, 10);
+    return { fmt: 'C', deliveryDateStr, slipNo, renban: renbanNumC,
+             partRaw, p1, p2, suffix, partNo: partRaw,
+             totalQty: qty * renbanNumC, capacity: qty, boxType: '',
+             fullBoxes: renbanNumC, fraction: 0 };
+  } catch(e) { return null; }
+}
+
+function parseQR(text) {
+  if (text.length >= 57) {
+    if (text.substring(7,11) === '    ' && text.substring(22,26) === '    ') {
+      const b = parseQR_B(text);
+      if (b) return b;
+    }
+    if (text.substring(23,26) === '   ' && text.substring(7,11).trim() !== '') {
+      const c = parseQR_C(text);
+      if (c) return c;
+    }
+  }
+  return parseQR_A(text);
 }
 
 // ===== 伝票HTML =====
@@ -429,7 +506,9 @@ function buildSlipHTML(data, type) {
   const today = new Date();
   const iraDate = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
   let qty, boxCount;
-  if (type === 'full') {
+  if (data.fmt === 'B' || data.fmt === 'C') {
+    qty = data.capacity; boxCount = data.fullBoxes;
+  } else if (type === 'full') {
     qty = data.capacity; boxCount = data.fullBoxes;
   } else {
     qty = data.fraction; boxCount = 1;
@@ -449,7 +528,7 @@ function buildSlipHTML(data, type) {
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
-    <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${type === 'full' ? '整数箱' : '端数箱'}】</td>
+    <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${(data.fmt === 'B' || data.fmt === 'C') ? 'かんばん' : (type === 'full' ? '整数箱' : '端数箱')}】</td>
     <td style="padding:0; border-bottom:1px solid #000;">
       <table class="flow-row-table">
         <colgroup>
@@ -620,8 +699,13 @@ let videoStream = null;
 let scanInterval = null;
 
 function addSlips(data) {
-  if (data.fullBoxes > 0) slips.push({ data, type: 'full' });
-  if (data.fraction  > 0) slips.push({ data, type: 'frac' });
+  if (data.fmt === 'B' || data.fmt === 'C') {
+    // 新フォーマット: 1スキャン=1伝票
+    slips.push({ data, type: 'full' });
+  } else {
+    if (data.fullBoxes > 0) slips.push({ data, type: 'full' });
+    if (data.fraction  > 0) slips.push({ data, type: 'frac' });
+  }
   renderSlipList();
   document.getElementById('action-btns').style.display = 'flex';
 }
@@ -629,11 +713,15 @@ function addSlips(data) {
 function renderSlipList() {
   document.getElementById('slip-list').innerHTML = slips.map((s, i) => {
     const isFull = s.type === 'full';
-    const qty = isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction;
+    const isB = s.data.fmt === 'B' || s.data.fmt === 'C';
+    const qty = isB ? s.data.capacity * s.data.fullBoxes : (isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction);
+    const badge = isB ? `かんばん${String(s.data.renban).padStart(3,'0')}` : (isFull ? '整数箱' : '端数箱');
+    const badgeCls = isB ? 'kanban' : (isFull ? '' : 'frac');
+    const partDisp = isB ? `${s.data.p1}-${s.data.p2}` : `${s.data.p1}－${s.data.p2}`;
     return `<div class="slip-card">
-      <div class="slip-card-badge ${isFull ? '' : 'frac'}">${isFull ? '整数箱' : '端数箱'}</div>
+      <div class="slip-card-badge ${badgeCls}">${badge}</div>
       <div>
-        <div class="slip-card-partno">${s.data.p1}－${s.data.p2}</div>
+        <div class="slip-card-partno">${partDisp}</div>
         <div class="slip-card-qty">${qty.toLocaleString()}個</div>
       </div>
     </div>`;
@@ -748,28 +836,38 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // 1枚でも2枚でも必ず794×1123pxで出力し、伝票サイズを統一する
-  for (let i = 0; i < slips.length; i += 2) {
+  // A4ページ固定: 794×1123px
+  // 4枚/ページ：padding15px上下、gap8px×3 → 1スロット=(1123-30-24)/4=267px
+  const PAGE_W = 794, PAGE_H = 1123;
+  const PADDING = 15, GAP = 8, PER_PAGE = 4;
+  const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
+  // 伝票本来幅734px→ページ幅764px(padding除く)に合わせる
+  const SLIP_NATURAL_W = 734;
+  const AVAILABLE_W = PAGE_W - PADDING * 2;
+  const SCALE = Math.min(SLIP_SLOT / 510, AVAILABLE_W / SLIP_NATURAL_W);
+
+  for (let i = 0; i < slips.length; i += PER_PAGE) {
     const page = document.createElement('div');
-    page.style.cssText = [
-      'width:794px', 'height:1123px', 'padding:30px', 'background:#e8edf5',
-      'display:flex', 'flex-direction:column', 'gap:18px',
-      'overflow:hidden', 'box-sizing:border-box'
-    ].join(';') + ';';
+    page.style.cssText = `width:${PAGE_W}px;height:${PAGE_H}px;padding:${PADDING}px;` +
+      `background:#e8edf5;display:flex;flex-direction:column;gap:${GAP}px;` +
+      `overflow:hidden;box-sizing:border-box;`;
 
-    // 上段伝票（常に配置）
-    const wrap1 = document.createElement('div');
-    wrap1.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
-    wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
-    page.appendChild(wrap1);
+    for (let j = 0; j < PER_PAGE; j++) {
+      const slot = document.createElement('div');
+      slot.style.cssText = `width:${AVAILABLE_W}px;height:${SLIP_SLOT}px;` +
+        `overflow:hidden;flex-shrink:0;position:relative;`;
 
-    // 下段：2枚目があれば伝票、なければ空白で高さを固定
-    const wrap2 = document.createElement('div');
-    wrap2.style.cssText = 'flex:1;overflow:hidden;display:flex;align-items:flex-start;';
-    if (slips[i + 1]) {
-      wrap2.innerHTML = buildSlipHTML(slips[i + 1].data, slips[i + 1].type);
+      const inner = document.createElement('div');
+      // transform:scaleで伝票全体を縮小（文字サイズ比率は保持）
+      inner.style.cssText = `transform:scale(${SCALE});transform-origin:top left;` +
+        `position:absolute;top:0;left:0;`;
+
+      if (slips[i + j]) {
+        inner.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
+      }
+      slot.appendChild(inner);
+      page.appendChild(slot);
     }
-    page.appendChild(wrap2);
 
     container.appendChild(page);
     await new Promise(r => setTimeout(r, 200));
@@ -778,9 +876,9 @@ async function generatePDF() {
       scale: 2,
       useCORS: true,
       logging: false,
-      windowWidth: 794,
-      width: 794,
-      height: 1123
+      windowWidth: PAGE_W,
+      width: PAGE_W,
+      height: PAGE_H
     });
     if (i > 0) pdf.addPage();
     pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);

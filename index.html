@@ -38,78 +38,88 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .scanner-btn-row { display: flex; gap: 8px; }
 .btn-scan-done { flex: 1; padding: 14px; background: #0ea5e9; color: #fff; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
 .btn-scan-cancel { padding: 14px 20px; background: rgba(255,255,255,.15); color: #fff; font-size: 13px; border: none; border-radius: 10px; cursor: pointer; }
-#pdf-container { position: fixed; left: -9999px; top: 0; width: 794px; }
+#pdf-container { position: fixed; left: -9999px; top: 0; width: 1123px; }
 
-/* ==================================================
-   伝票CSS（px完全固定）
-   ページ794×1123px、PAD12px、GAP6px、4枚
-   SLIP_W=770px  SLIP_H=270px
-   ================================================== */
-.slip { width: 770px; border: 2px solid #1a1a1a; border-radius: 2px; font-family: 'Meiryo','MS Gothic','Yu Gothic',sans-serif; background: #fff; overflow: hidden; }
-.slip table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.slip td { border: 1px solid #bbb; vertical-align: middle; padding: 0; }
 
-/* ヘッダー */
-.hdr-title { font-size: 11pt; font-weight: bold; text-align: center; padding: 2px 1px; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.4; background: #1a3a6b; color: #fff; height: 32px; }
-.hdr-title-blank { background: #1a3a6b; border-right: 2px solid #1a3a6b; border-top: none !important; padding: 0; }
-.flow-row-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.flow-lbl-td { text-align: center; font-size: 7pt; font-weight: bold; vertical-align: middle; height: 22px; padding: 1px 0; border-bottom: 1px solid #4a6fa5; background: #dce8f8; color: #1a3a6b; }
-.flow-arr-td { width: 18px; text-align: center; vertical-align: middle; font-size: 10pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1px solid #4a6fa5; background: #dce8f8; padding: 0; height: 22px; }
-.flow-stamp-td { height: 22px; background: #fafafa; }
-.flow-arr-stamp-td { width: 18px; border-left: none !important; border-right: none !important; height: 22px; background: #fafafa; }
-
-/* 品番 */
-.hinban-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; letter-spacing: 2px; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
-.inner-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.dc { width: 30px; height: 30px; text-align: center; vertical-align: middle; font-size: 13pt; font-weight: bold; border: 1px solid #888; background: #fff; color: #111; }
-.ds { width: 20px; text-align: center; vertical-align: middle; font-size: 13pt; font-weight: bold; border: none; color: #555; }
-.dn { text-align: left; vertical-align: middle; font-size: 6pt; padding-left: 4px; white-space: nowrap; border: none; color: #666; font-style: italic; }
-.cc { width: 30px; height: 18px; text-align: center; vertical-align: middle; border: none; background: #fffbe6; }
-.cs { width: 20px; border: none; background: #fffbe6; }
-.cn { text-align: left; vertical-align: middle; font-size: 6pt; padding-left: 4px; white-space: nowrap; border: none; color: #666; font-style: italic; background: #fffbe6; }
-.ck-circle { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border: 1px solid #555; border-radius: 50%; background: #fff; }
-.ck-dots { font-size: 6pt; line-height: 1; margin-bottom: 3px; color: #333; }
-.row-ck1 td { border-bottom: 1px solid #ddd; }
-.row-digit td.dc { border: 1px solid #666; }
-.row-ck2 td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
-.row-ck3 td { border-top: none; }
-
-/* 依頼日 */
-.irai-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 2px solid #888; background: #f0f0f0; color: #333; }
-.irai-date-td { font-size: 11pt; font-weight: bold; text-align: center; vertical-align: middle; height: 26px; border-right: 1px solid #bbb; width: 120px; color: #111; }
-.biko-td { vertical-align: top; padding: 2px 4px; font-size: 7.5pt; background: #f2f9f2; }
-.biko-title { font-weight: bold; font-size: 8pt; margin-bottom: 1px; color: #2a6a2a; }
-
-/* 数量 */
-.qty-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
-.qty-body-td { font-size: 20pt; font-weight: bold; text-align: center; vertical-align: middle; height: 40px; border-right: 1px solid #bbb; color: #111; }
-.qty-num { text-decoration: underline; }
-.stamp-td { width: 110px; vertical-align: top; padding: 0; }
-.stamp-lbl-cell { text-align: center; font-size: 6pt; font-weight: bold; height: 18px; border-bottom: 1px solid #bbb; vertical-align: middle; padding: 0; background: #f5f5f5; color: #444; }
-.stamp-box-cell { height: 22px; background: #fff; }
-.biko-r-td { width: 110px; vertical-align: top; padding: 2px 3px; font-size: 6pt; line-height: 1.6; color: #555; background: #fafafa; }
-
-/* 出荷日 */
-.shipday-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; border-right: 2px solid #888; vertical-align: middle; line-height: 1.3; padding: 1px 0; background: #f0f0f0; color: #333; }
-.shipday-body-td { font-size: 9pt; vertical-align: middle; text-align: center; height: 22px; padding: 0 4px; white-space: nowrap; color: #222; }
-.ul { border-bottom: 1px solid #333; display: inline-block; min-width: 18px; }
-
-/* 箱種 */
-.hako-label-td { width: 22px; font-size: 7pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
-.hako-val-td { width: 50px; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 1px solid #bbb; padding: 1px; color: #111; height: 22px; }
-.rekakunin-td { vertical-align: middle; padding: 2px 4px; }
-.rekakunin-inner { border: 1.5px solid #c87000; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; padding: 2px 4px; gap: 2px; background: #fff8ec; }
-.rekakunin-txt { font-size: 7.5pt; color: #7a4000; font-weight: bold; }
-.rekakunin-right { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.face-circle { width: 18px; height: 18px; border: 1.5px solid #c87000; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; }
-.face-dots { font-size: 7pt; color: #7a4000; line-height: 1; margin-bottom: 3px; letter-spacing: 1px; }
-.ok-box { border: 1.5px solid #1a7a1a; border-radius: 3px; padding: 1px 6px; font-size: 10pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
-
-/* フッター */
-.slip-footer { text-align: center; font-size: 7.5pt; font-weight: bold; padding: 3px 0; border-top: 1.5px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; }
 
 /* PDFページ: 794×1123px、PAD12px、GAP6px */
 .pdf-page { width: 794px; height: 1123px; padding: 12px; background: #e8edf5; display: flex; flex-direction: column; gap: 6px; overflow: hidden; box-sizing: border-box; }
+
+/* ===== PDF用ページ: A4横 4枚/ページ ===== */
+.pdf-page {
+  width: 1123px; height: 794px;
+  background: #e8edf5;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.slip-slot {
+  position: absolute;
+  width: 537px; height: 372px;
+  overflow: hidden;
+}
+.slip-scaler {
+  transform: translateX(65.1px) scale(0.555);
+  transform-origin: top left;
+  display: inline-block;
+}
+
+/* ===== 伝票CSS（preview_slip.html準拠） ===== */
+.slip {
+  width: 194mm;
+  border: 2.5px solid #1a1a1a;
+  border-radius: 3px;
+  font-family: 'Meiryo', 'MS Gothic', 'Yu Gothic', sans-serif;
+  background: #fff;
+  overflow: hidden;
+}
+.slip table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.slip td { border: 1px solid #bbb; vertical-align: middle; padding: 0; }
+.hdr-title { font-size: 15pt; font-weight: bold; text-align: center; padding: 2.5mm 1mm; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.6; background: #1a3a6b; color: #ffffff; }
+.hdr-title-blank { background: #1a3a6b; border-right: 2px solid #1a3a6b; border-top: none !important; padding: 0; }
+.flow-row-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.flow-lbl-td { text-align: center; font-size: 9pt; font-weight: bold; vertical-align: middle; height: 10mm; padding: 1mm 0; border-bottom: 1.5px solid #4a6fa5; background: #dce8f8; color: #1a3a6b; }
+.flow-arr-td { width: 10mm; text-align: center; vertical-align: middle; font-size: 18pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1.5px solid #4a6fa5; background: #dce8f8; padding: 0; height: 10mm; }
+.flow-stamp-td { text-align: center; vertical-align: middle; height: 20mm; padding: 0; background: #fafafa; }
+.flow-arr-stamp-td { width: 10mm; border-left: none !important; border-right: none !important; height: 20mm; background: #fafafa; }
+.hinban-label-td { width: 14mm; font-size: 11pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; letter-spacing: 3px; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+.inner-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.dc { width: 11mm; height: 14mm; text-align: center; vertical-align: middle; font-size: 18pt; font-weight: bold; border: 1.5px solid #888; background: #fff; color: #111; }
+.ds { width: 9mm; text-align: center; vertical-align: middle; font-size: 18pt; font-weight: bold; border: none; color: #555; }
+.dn { text-align: left; vertical-align: middle; font-size: 8pt; padding-left: 3mm; white-space: nowrap; border: none; color: #666; font-style: italic; }
+.cc { width: 11mm; height: 11mm; text-align: center; vertical-align: middle; border: none; background: #fffbe6; }
+.cs { width: 9mm; border: none; background: #fffbe6; }
+.cn { text-align: left; vertical-align: middle; font-size: 8pt; padding-left: 3mm; white-space: nowrap; border: none; color: #666; font-style: italic; background: #fffbe6; }
+.ck-circle { display: inline-flex; align-items: center; justify-content: center; width: 7mm; height: 7mm; border: 1.5px solid #555; border-radius: 50%; background: #fff; }
+.ck-dots { font-size: 9pt; line-height: 1; margin-bottom: 2mm; color: #333; }
+.row-ck1 td { border-bottom: 1px solid #ddd; }
+.row-digit td.dc { border: 1.5px solid #666; }
+.row-ck2 td { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+.row-ck3 td { border-top: none; }
+.irai-label-td { width: 14mm; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 2px solid #888; background: #f0f0f0; color: #333; }
+.irai-date-td { font-size: 16pt; font-weight: bold; text-align: center; vertical-align: middle; height: 14mm; border-right: 1.5px solid #bbb; width: 55mm; color: #111; }
+.biko-td { vertical-align: top; padding: 2mm 3mm; font-size: 10.5pt; background: #f2f9f2; }
+.biko-title { font-weight: bold; font-size: 10pt; margin-bottom: 1.5mm; color: #2a6a2a; }
+.qty-label-td { width: 14mm; font-size: 11pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+.qty-body-td { font-size: 28pt; font-weight: bold; text-align: center; vertical-align: middle; height: 20mm; border-right: 1.5px solid #bbb; color: #111; letter-spacing: 1px; }
+.qty-num { text-decoration: underline; }
+.stamp-td { width: 42mm; vertical-align: top; padding: 0; }
+.stamp-lbl-cell { text-align: center; font-size: 8.5pt; font-weight: bold; height: 10mm; border-bottom: 1.5px solid #bbb; vertical-align: middle; padding: 0 0.5mm; background: #f5f5f5; color: #444; }
+.stamp-box-cell { height: 15mm; background: #fff; }
+.biko-r-td { width: 44mm; vertical-align: top; padding: 1.5mm 2mm; font-size: 7.5pt; line-height: 1.7; color: #555; background: #fafafa; }
+.shipday-label-td { width: 14mm; font-size: 10pt; font-weight: bold; text-align: center; border-right: 2px solid #888; vertical-align: middle; line-height: 1.4; padding: 1mm 0; background: #f0f0f0; color: #333; }
+.shipday-body-td { font-size: 13pt; vertical-align: middle; text-align: center; height: 13mm; padding: 0 3mm; white-space: nowrap; color: #222; }
+.ul { border-bottom: 2px solid #333; display: inline-block; min-width: 10mm; }
+.hako-label-td { width: 14mm; font-size: 11pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
+.hako-val-td { width: 22mm; font-size: 15pt; font-weight: bold; text-align: center; vertical-align: middle; border-right: 1.5px solid #bbb; padding: 1mm; color: #111; }
+.rekakunin-td { vertical-align: middle; padding: 2mm 3mm; }
+.rekakunin-inner { border: 2px solid #c87000; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; padding: 2mm 3mm; gap: 2mm; background: #fff8ec; }
+.rekakunin-txt { font-size: 10.5pt; color: #7a4000; font-weight: bold; }
+.rekakunin-right { display: flex; align-items: center; gap: 2mm; flex-shrink: 0; }
+.face-circle { width: 11mm; height: 11mm; border: 2px solid #c87000; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; }
+.face-dots { font-size: 11pt; color: #7a4000; line-height: 1; margin-bottom: 2mm; letter-spacing: 1px; }
+.ok-box { border: 2px solid #1a7a1a; border-radius: 4px; padding: 1.5mm 4mm; font-size: 16pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
+.slip-footer { text-align: center; font-size: 12pt; font-weight: bold; padding: 3mm 0; border-top: 2px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
@@ -326,35 +336,56 @@ function startScan(video){
   },200);
 }
 
-// ===== PDF生成（A4×4枚/ページ・px完全固定） =====
-async function generatePDF(){
-  if(slips.length===0){alert('伝票がありません');return;}
-  document.getElementById('status').textContent='PDF生成中...';
-  const container=document.getElementById('pdf-container');
-  container.innerHTML='';
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+// ===== PDF生成（A4横・4枚/ページ） =====
+async function generatePDF() {
+  if (slips.length === 0) { alert('伝票がありません'); return; }
+  document.getElementById('status').textContent = 'PDF生成中...';
+  const container = document.getElementById('pdf-container');
+  container.innerHTML = '';
+  const { jsPDF } = window.jspdf;
+  // A4横: 297×210mm
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-  for(let i=0;i<slips.length;i+=4){
-    const page=document.createElement('div');
-    page.className='pdf-page';
-    for(let j=0;j<4;j++){
-      const wrap=document.createElement('div');
-      wrap.style.cssText='width:770px;height:270px;overflow:hidden;flex-shrink:0;';
-      if(slips[i+j]) wrap.innerHTML=buildSlipHTML(slips[i+j].data,slips[i+j].type);
-      page.appendChild(wrap);
+  // 承認済みレイアウト: 1123×794px、スロット537×372px
+  // transform: translateX(65.1px) scale(0.555)
+  const PAGE_W = 1123, PAGE_H = 794;
+  const POSITIONS = [{l:12,t:12},{l:557,t:12},{l:12,t:392},{l:557,t:392}];
+
+  for (let i = 0; i < slips.length; i += 4) {
+    const page = document.createElement('div');
+    page.className = 'pdf-page';
+
+    for (let j = 0; j < 4; j++) {
+      const pos = POSITIONS[j];
+      const slot = document.createElement('div');
+      slot.className = 'slip-slot';
+      slot.style.left = pos.l + 'px';
+      slot.style.top  = pos.t + 'px';
+
+      if (slips[i + j]) {
+        const scaler = document.createElement('div');
+        scaler.className = 'slip-scaler';
+        scaler.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
+        slot.appendChild(scaler);
+      }
+      page.appendChild(slot);
     }
+
     container.appendChild(page);
-    await new Promise(r=>setTimeout(r,200));
-    const canvas=await html2canvas(page,{scale:2,useCORS:true,logging:false,windowWidth:794,width:794,height:1123});
-    if(i>0) pdf.addPage();
-    pdf.addImage(canvas.toDataURL('image/jpeg',0.97),'JPEG',0,0,210,297);
-    container.innerHTML='';
+    await new Promise(r => setTimeout(r, 200));
+
+    const canvas = await html2canvas(page, {
+      scale: 2, useCORS: true, logging: false,
+      windowWidth: PAGE_W, width: PAGE_W, height: PAGE_H
+    });
+    if (i > 0) pdf.addPage();
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 297, 210);
+    container.innerHTML = '';
   }
 
-  const now=new Date();
+  const now = new Date();
   pdf.save(`指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`);
-  document.getElementById('status').textContent='✅ PDF出力完了！';
+  document.getElementById('status').textContent = '✅ PDF出力完了！';
 }
 </script>
 </body>

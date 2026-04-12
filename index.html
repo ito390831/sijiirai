@@ -38,31 +38,12 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .scanner-btn-row { display: flex; gap: 8px; }
 .btn-scan-done { flex: 1; padding: 14px; background: #0ea5e9; color: #fff; font-size: 15px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
 .btn-scan-cancel { padding: 14px 20px; background: rgba(255,255,255,.15); color: #fff; font-size: 13px; border: none; border-radius: 10px; cursor: pointer; }
-#pdf-container { position: fixed; left: -9999px; top: 0; width: 1123px; }
+#pdf-container { position: fixed; left: -9999px; top: 0; width: 794px; }
 
 
 
 /* PDFページ: 794×1123px、PAD12px、GAP6px */
 .pdf-page { width: 794px; height: 1123px; padding: 12px; background: #e8edf5; display: flex; flex-direction: column; gap: 6px; overflow: hidden; box-sizing: border-box; }
-
-/* ===== PDF用ページ: A4横 4枚/ページ ===== */
-.pdf-page {
-  width: 1123px; height: 794px;
-  background: #e8edf5;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-.slip-slot {
-  position: absolute;
-  width: 537px; height: 372px;
-  overflow: hidden;
-}
-.slip-scaler {
-  transform: translateX(65.1px) scale(0.555);
-  transform-origin: top left;
-  display: inline-block;
-}
 
 /* ===== 伝票CSS（preview_slip.html準拠） ===== */
 .slip {
@@ -120,6 +101,14 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .face-dots { font-size: 11pt; color: #7a4000; line-height: 1; margin-bottom: 2mm; letter-spacing: 1px; }
 .ok-box { border: 2px solid #1a7a1a; border-radius: 4px; padding: 1.5mm 4mm; font-size: 16pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
 .slip-footer { text-align: center; font-size: 12pt; font-weight: bold; padding: 3mm 0; border-top: 2px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px; }
+
+/* PDF用ページ: A4縦 2枚/ページ */
+.pdf-page {
+  width: 794px; height: 1123px;
+  padding: 20px; background: #e8edf5;
+  display: flex; flex-direction: column; gap: 14px;
+  overflow: hidden; box-sizing: border-box;
+}
 </style>
 </head>
 <body>
@@ -336,50 +325,39 @@ function startScan(video){
   },200);
 }
 
-// ===== PDF生成（A4横・4枚/ページ） =====
+// ===== PDF生成（A4縦・2枚/ページ） =====
 async function generatePDF() {
   if (slips.length === 0) { alert('伝票がありません'); return; }
   document.getElementById('status').textContent = 'PDF生成中...';
   const container = document.getElementById('pdf-container');
   container.innerHTML = '';
   const { jsPDF } = window.jspdf;
-  // A4横: 297×210mm
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // 承認済みレイアウト: 1123×794px、スロット537×372px
-  // transform: translateX(65.1px) scale(0.555)
-  const PAGE_W = 1123, PAGE_H = 794;
-  const POSITIONS = [{l:12,t:12},{l:557,t:12},{l:12,t:392},{l:557,t:392}];
-
-  for (let i = 0; i < slips.length; i += 4) {
+  for (let i = 0; i < slips.length; i += 2) {
     const page = document.createElement('div');
     page.className = 'pdf-page';
 
-    for (let j = 0; j < 4; j++) {
-      const pos = POSITIONS[j];
-      const slot = document.createElement('div');
-      slot.className = 'slip-slot';
-      slot.style.left = pos.l + 'px';
-      slot.style.top  = pos.t + 'px';
+    // 上段
+    const w1 = document.createElement('div');
+    w1.style.cssText = 'flex:1;overflow:hidden;';
+    w1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
+    page.appendChild(w1);
 
-      if (slips[i + j]) {
-        const scaler = document.createElement('div');
-        scaler.className = 'slip-scaler';
-        scaler.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
-        slot.appendChild(scaler);
-      }
-      page.appendChild(slot);
-    }
+    // 下段（2枚目があれば伝票、なければ空白）
+    const w2 = document.createElement('div');
+    w2.style.cssText = 'flex:1;overflow:hidden;';
+    if (slips[i + 1]) w2.innerHTML = buildSlipHTML(slips[i+1].data, slips[i+1].type);
+    page.appendChild(w2);
 
     container.appendChild(page);
     await new Promise(r => setTimeout(r, 200));
-
     const canvas = await html2canvas(page, {
       scale: 2, useCORS: true, logging: false,
-      windowWidth: PAGE_W, width: PAGE_W, height: PAGE_H
+      windowWidth: 794, width: 794, height: 1123
     });
     if (i > 0) pdf.addPage();
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 297, 210);
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);
     container.innerHTML = '';
   }
 

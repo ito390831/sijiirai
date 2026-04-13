@@ -836,20 +836,15 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // A4ページ固定: 794×1123px、4枚/ページ
+  // A4ページ固定: 794×1123px
+  // 4枚/ページ：padding15px上下、gap8px×3 → 1スロット=(1123-30-24)/4=267px
   const PAGE_W = 794, PAGE_H = 1123;
   const PADDING = 15, GAP = 8, PER_PAGE = 4;
-  const AVAILABLE_W = PAGE_W - PADDING * 2;         // 764px
-  const SLIP_SLOT   = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE); // 267px
-  const SLIP_NAT_W  = 734;   // 伝票本来の幅
-  const SLIP_NAT_H  = 510;   // 伝票本来の高さ（余裕込み）
-  // 幅・高さ両方に収まるスケールを選択
-  const SCALE = Math.min(AVAILABLE_W / SLIP_NAT_W, SLIP_SLOT / SLIP_NAT_H);
-  // 縮小後の見た目サイズ
-  const VISUAL_W = SLIP_NAT_W * SCALE;
-  const VISUAL_H = SLIP_NAT_H * SCALE;
-  // 水平中央寄せのオフセット
-  const TX = (AVAILABLE_W - VISUAL_W) / 2;
+  const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
+  // 伝票本来幅734px→ページ幅764px(padding除く)に合わせる
+  const SLIP_NATURAL_W = 734;
+  const AVAILABLE_W = PAGE_W - PADDING * 2;
+  const SCALE = Math.min(SLIP_SLOT / 510, AVAILABLE_W / SLIP_NATURAL_W);
 
   for (let i = 0; i < slips.length; i += PER_PAGE) {
     const page = document.createElement('div');
@@ -858,18 +853,14 @@ async function generatePDF() {
       `overflow:hidden;box-sizing:border-box;`;
 
     for (let j = 0; j < PER_PAGE; j++) {
-      // スロット: 見た目サイズに合わせた固定枠
       const slot = document.createElement('div');
       slot.style.cssText = `width:${AVAILABLE_W}px;height:${SLIP_SLOT}px;` +
         `overflow:hidden;flex-shrink:0;position:relative;`;
 
       const inner = document.createElement('div');
-      // translateX で中央寄せ + scale で縮小
-      // transform-origin: top left のままtranslateXを加算
-      inner.style.cssText =
-        `position:absolute;top:0;left:0;` +
-        `transform:translateX(${TX.toFixed(1)}px) scale(${SCALE.toFixed(4)});` +
-        `transform-origin:top left;`;
+      // transform:scaleで伝票全体を縮小（文字サイズ比率は保持）
+      inner.style.cssText = `transform:scale(${SCALE});transform-origin:top left;` +
+        `position:absolute;top:0;left:0;`;
 
       if (slips[i + j]) {
         inner.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);

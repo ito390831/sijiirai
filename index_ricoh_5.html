@@ -146,46 +146,31 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #1a3a6b;
   line-height: 1.6;
   background: #1a3a6b;
-  color: #ffffff;
+  color: #ffffff; height: 20mm;
 }
-.hdr-title-blank {
-  background: #1a3a6b;
-  border-right: 2px solid #1a3a6b;
-  border-top: none !important;
-  padding: 0;
-}
+.hdr-title-blank { display: none; }
 /* 工程フロー：薄青背景 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .flow-lbl-td {
-  text-align: center; font-size: 9pt; font-weight: bold;
-  vertical-align: middle;
-  height: 9mm; padding: 1mm 0;
+  text-align: center; font-size: 7pt; font-weight: bold;
+  vertical-align: top; height: 20mm; padding: 0;
   border-bottom: 1.5px solid #4a6fa5;
-  background: #dce8f8;
+  background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px);
   color: #1a3a6b;
 }
-.flow-arr-td {
-  width: 10mm;
-  text-align: center; vertical-align: middle;
-  font-size: 16pt; color: #1a3a6b;
-  border-left: none !important; border-right: none !important;
-  border-bottom: 1.5px solid #4a6fa5;
-  background: #dce8f8;
-  padding: 0; height: 9mm;
+.flow-lbl-inner {
+  display: block; height: 26px; line-height: 26px;
+  font-size: 7pt; font-weight: bold; color: #1a3a6b;
 }
-.flow-stamp-td {
-  text-align: center; vertical-align: middle;
-  height: 9mm; padding: 0;
+.flow-stamp-space {
+  display: block; height: calc(20mm - 26px);
   background: #fafafa;
 }
-.flow-arr-stamp-td {
-  width: 10mm;
-  border-left: none !important; border-right: none !important;
-  height: 9mm;
-  background: #fafafa;
-}
+.flow-arr-td { width: 10mm; text-align: center; vertical-align: top; padding-top: 4px; font-size: 12pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1.5px solid #4a6fa5; background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px); height: 20mm; }
+.flow-stamp-td { display: none; }
+.flow-arr-stamp-td { display: none; }
 
 /* ---- 品番：ラベルグレー・チェック行薄黄 ---- */
 .hinban-label-td {
@@ -328,7 +313,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   width: 22mm; font-size: 15pt; font-weight: bold;
   text-align: center; vertical-align: middle;
   border-right: 1.5px solid #bbb; padding: 1mm;
-  color: #111; height: 9mm;
+  color: #111; height: 10mm;
 }
 .rekakunin-td { vertical-align: middle; padding: 2mm 3mm; }
 .rekakunin-inner {
@@ -360,7 +345,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ---- フッター：濃紺で締める ---- */
 .slip-footer {
   text-align: center; font-size: 11pt; font-weight: bold;
-  padding: 3mm 0; border-top: 2px solid #1a3a6b;
+  padding: 2mm 0; border-top: 2px solid #1a3a6b;
   background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px;
 }
 
@@ -541,15 +526,11 @@ function buildSlipHTML(data, type) {
           <col><col style="width:8mm"><col><col style="width:8mm"><col>
         </colgroup>
         <tr>
-          <td class="flow-lbl-td">依頼者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">監督者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">作業者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">監督者<br>(品確)</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">依頼者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">作業者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者<br>(品確)</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td" style="border-right:none;"><span class="flow-lbl-inner">最終確認<br>(日程G)</span><span class="flow-stamp-space"></span></td>
         </tr>
       </table>
     </td>

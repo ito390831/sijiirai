@@ -61,13 +61,27 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .slip table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .slip td { border: 1px solid #bbb; vertical-align: middle; padding: 0; }
-.hdr-title { font-size: 15pt; font-weight: bold; text-align: center; padding: 2.5mm 1mm; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.6; background: #1a3a6b; color: #ffffff; }
-.hdr-title-blank { background: #1a3a6b; border-right: 2px solid #1a3a6b; border-top: none !important; padding: 0; }
+.hdr-title { font-size: 15pt; font-weight: bold; text-align: center; padding: 1.5mm 1mm; vertical-align: middle; border-right: 2px solid #1a3a6b; line-height: 1.6; background: #1a3a6b; color: #ffffff; }
+.hdr-title-blank { display: none; }
 .flow-row-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.flow-lbl-td { text-align: center; font-size: 9pt; font-weight: bold; vertical-align: middle; height: 10mm; padding: 1mm 0; border-bottom: 1.5px solid #4a6fa5; background: #dce8f8; color: #1a3a6b; }
-.flow-arr-td { width: 10mm; text-align: center; vertical-align: middle; font-size: 18pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1.5px solid #4a6fa5; background: #dce8f8; padding: 0; height: 10mm; }
-.flow-stamp-td { text-align: center; vertical-align: middle; height: 9mm; padding: 0; background: #fafafa; }
-.flow-arr-stamp-td { width: 10mm; border-left: none !important; border-right: none !important; height: 9mm; background: #fafafa; }
+.flow-lbl-td {
+  text-align: center; font-size: 7pt; font-weight: bold;
+  vertical-align: top; height: 20mm; padding: 0;
+  border-bottom: 1.5px solid #4a6fa5;
+  background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px);
+  color: #1a3a6b;
+}
+.flow-lbl-inner {
+  display: block; height: 26px; line-height: 26px;
+  font-size: 7pt; font-weight: bold; color: #1a3a6b;
+}
+.flow-stamp-space {
+  display: block; height: calc(20mm - 26px);
+  background: #fafafa;
+}
+.flow-arr-td { width: 10mm; text-align: center; vertical-align: top; padding-top: 4px; font-size: 12pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1.5px solid #4a6fa5; background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px); height: 20mm; }
+.flow-stamp-td { text-align: center; vertical-align: middle; height: 12mm; padding: 0; background: #fafafa; }
+.flow-arr-stamp-td { width: 10mm; border-left: none !important; border-right: none !important; height: 12mm; background: #fafafa; }
 .hinban-label-td { width: 14mm; font-size: 11pt; font-weight: bold; text-align: center; writing-mode: vertical-rl; letter-spacing: 3px; border-right: 2px solid #888; vertical-align: middle; background: #f0f0f0; color: #333; }
 .inner-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .dc { width: 11mm; height: 14mm; text-align: center; vertical-align: middle; font-size: 18pt; font-weight: bold; border: 1.5px solid #888; background: #fff; color: #111; }
@@ -105,7 +119,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .face-circle { width: 11mm; height: 11mm; border: 2px solid #c87000; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; }
 .face-dots { font-size: 11pt; color: #7a4000; line-height: 1; margin-bottom: 2mm; letter-spacing: 1px; }
 .ok-box { border: 2px solid #1a7a1a; border-radius: 4px; padding: 1.5mm 4mm; font-size: 16pt; font-weight: bold; white-space: nowrap; color: #1a7a1a; background: #f0fff0; }
-.slip-footer { text-align: center; font-size: 12pt; font-weight: bold; padding: 3mm 0; border-top: 2px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px; }
+.slip-footer { text-align: center; font-size: 12pt; font-weight: bold; padding: 2mm 0; border-top: 2px solid #1a3a6b; background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px; }
 
 /* PDF用ページ: A4縦 2枚/ページ */
 .pdf-page {
@@ -202,11 +216,11 @@ function buildSlipHTML(data, type) {
   <td style="padding:0;border-bottom:1px solid #000;">
     <table class="flow-row-table"><colgroup><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col><col style="width:18px"><col></colgroup>
     <tr>
-      <td class="flow-lbl-td">依頼者</td><td class="flow-arr-td">➡</td>
-      <td class="flow-lbl-td">監督者</td><td class="flow-arr-td">➡</td>
-      <td class="flow-lbl-td">作業者</td><td class="flow-arr-td">➡</td>
-      <td class="flow-lbl-td">監督者<br>(品確)</td><td class="flow-arr-td">➡</td>
-      <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
+      <td class="flow-lbl-td"><span class="flow-lbl-inner">依頼者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+      <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+      <td class="flow-lbl-td"><span class="flow-lbl-inner">作業者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+      <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者<br>(品確)</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+      <td class="flow-lbl-td" style="border-right:none;"><span class="flow-lbl-inner">最終確認<br>(日程G)</span><span class="flow-stamp-space"></span></td>
     </tr></table>
   </td>
 </tr>

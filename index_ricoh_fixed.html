@@ -154,53 +154,38 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-top: none !important;
   padding: 0;
 }
-/* 工程フロー：ラベルを枠の最上端に固定・改行なし1行 */
+/* 工程フロー：薄青背景 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .flow-lbl-td {
-  text-align: center; font-size: 7pt; font-weight: bold;
-  vertical-align: top;
-  height: 18mm;
-  padding: 0;           /* paddingゼロで完全上端 */
+  text-align: center; font-size: 9pt; font-weight: bold;
+  vertical-align: middle;
+  height: 9mm; padding: 1mm 0;
+  border-bottom: 1.5px solid #4a6fa5;
   background: #dce8f8;
-  color: #1a3a6b;
-  white-space: nowrap;  /* 改行禁止 */
-  overflow: hidden;
-}
-/* ラベルテキストを上端ピタに貼るdiv */
-.flow-lbl-td .lbl-top {
-  display: block;
-  width: 100%;
-  padding: 1px 1px 0;   /* 上1pxだけ余白、枠に接して表示 */
-  font-size: 7pt;
-  font-weight: bold;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
-  border-bottom: 1px solid #b0c8e8; /* ラベルと捺印スペースの境界線 */
-  background: #c8dcf0;              /* ラベル帯を少し濃くして視認性UP */
   color: #1a3a6b;
 }
 .flow-arr-td {
   width: 10mm;
-  text-align: center; vertical-align: top;
-  font-size: 13pt; color: #1a3a6b;
+  text-align: center; vertical-align: middle;
+  font-size: 16pt; color: #1a3a6b;
   border-left: none !important; border-right: none !important;
+  border-bottom: 1.5px solid #4a6fa5;
   background: #dce8f8;
-  padding: 0; height: 18mm;
+  padding: 0; height: 9mm;
 }
-.flow-arr-td .lbl-top {
-  display: block;
-  padding: 1px 0 0;
-  line-height: 1.2;
-  font-size: 13pt;
-  border-bottom: 1px solid #b0c8e8;
-  background: #c8dcf0;
+.flow-stamp-td {
+  text-align: center; vertical-align: middle;
+  height: 12mm; padding: 0;
+  background: #fafafa;
 }
-.flow-stamp-td    { display: none; }
-.flow-arr-stamp-td{ display: none; }
+.flow-arr-stamp-td {
+  width: 10mm;
+  border-left: none !important; border-right: none !important;
+  height: 12mm;
+  background: #fafafa;
+}
 
 /* ---- 品番：ラベルグレー・チェック行薄黄 ---- */
 .hinban-label-td {
@@ -276,7 +261,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .irai-date-td {
   font-size: 16pt; font-weight: bold; text-align: center;
-  vertical-align: middle; height: 8mm;
+  vertical-align: middle; height: 11mm;
   border-right: 1.5px solid #bbb;
   width: 55mm; color: #111;
 }
@@ -383,7 +368,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .pdf-page {
   width: 794px; height: 1123px;
   padding: 30px 30px; background: #e8edf5;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 18px;
   overflow: hidden;
 }
 </style>
@@ -556,15 +541,15 @@ function buildSlipHTML(data, type) {
           <col><col style="width:8mm"><col><col style="width:8mm"><col>
         </colgroup>
         <tr>
-          <td class="flow-lbl-td"><div class="lbl-top">依頼者</div></td>
-          <td class="flow-arr-td"><div class="lbl-top">➡</div></td>
-          <td class="flow-lbl-td"><div class="lbl-top">監督者</div></td>
-          <td class="flow-arr-td"><div class="lbl-top">➡</div></td>
-          <td class="flow-lbl-td"><div class="lbl-top">作業者</div></td>
-          <td class="flow-arr-td"><div class="lbl-top">➡</div></td>
-          <td class="flow-lbl-td"><div class="lbl-top">監督者(品確)</div></td>
-          <td class="flow-arr-td"><div class="lbl-top">➡</div></td>
-          <td class="flow-lbl-td" style="border-right:none;"><div class="lbl-top">最終確認(日程G)</div></td>
+          <td class="flow-lbl-td">依頼者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">監督者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">作業者</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td">監督者<br>(品確)</td>
+          <td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
         </tr>
       </table>
     </td>
@@ -652,9 +637,13 @@ function buildSlipHTML(data, type) {
     <td class="stamp-td">
       <table>
         <tr>
-          <td class="stamp-lbl-cell" style="border-right:1px solid #000;">数量<br>チェック</td>
+          <td class="stamp-lbl-cell" rowspan="2" style="border-right:1px solid #000; vertical-align:middle;">数量<br>チェック</td>
           <td class="stamp-lbl-cell" style="border-right:1px solid #000;">作業者</td>
           <td class="stamp-lbl-cell" style="border-right:none;">監督者</td>
+        </tr>
+        <tr>
+          <td class="stamp-box-cell" style="border-right:1px solid #000;"></td>
+          <td class="stamp-box-cell" style="border-right:none;"></td>
         </tr>
       </table>
     </td>
@@ -850,31 +839,34 @@ async function generatePDF() {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
 
-  // ページ固定サイズ: 794×1123px (A4@96dpi)
-  // 伝票1枚の固定高さ: padding30×2 + gap6 → SLIP_H=528px
   const PAGE_W = 794, PAGE_H = 1123;
-  const PADDING = 30, GAP = 6;
-  const SLIP_H = Math.floor((PAGE_H - PADDING * 2 - GAP) / 2); // 528px
+  const PADDING = 15, GAP = 8, PER_PAGE = 4;
+  const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
+  const SLIP_NATURAL_W = 734;
+  const AVAILABLE_W = PAGE_W - PADDING * 2;
+  const SCALE = Math.min(SLIP_SLOT / 510, AVAILABLE_W / SLIP_NATURAL_W);
 
-  for (let i = 0; i < slips.length; i += 2) {
+  for (let i = 0; i < slips.length; i += PER_PAGE) {
     const page = document.createElement('div');
     page.style.cssText = `width:${PAGE_W}px;height:${PAGE_H}px;padding:${PADDING}px;` +
       `background:#e8edf5;display:flex;flex-direction:column;gap:${GAP}px;` +
       `overflow:hidden;box-sizing:border-box;`;
 
-    // 上段：固定高さのラッパーに伝票を収める
-    const wrap1 = document.createElement('div');
-    wrap1.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
-    wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
-    page.appendChild(wrap1);
+    for (let j = 0; j < PER_PAGE; j++) {
+      const slot = document.createElement('div');
+      slot.style.cssText = `width:${AVAILABLE_W}px;height:${SLIP_SLOT}px;` +
+        `overflow:hidden;flex-shrink:0;position:relative;`;
 
-    // 下段：2枚目があれば伝票、なければ空白（高さは同じ）
-    const wrap2 = document.createElement('div');
-    wrap2.style.cssText = `width:100%;height:${SLIP_H}px;overflow:hidden;flex-shrink:0;`;
-    if (slips[i + 1]) {
-      wrap2.innerHTML = buildSlipHTML(slips[i + 1].data, slips[i + 1].type);
+      const inner = document.createElement('div');
+      inner.style.cssText = `transform:scale(${SCALE});transform-origin:top left;` +
+        `position:absolute;top:0;left:0;`;
+
+      if (slips[i + j]) {
+        inner.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
+      }
+      slot.appendChild(inner);
+      page.appendChild(slot);
     }
-    page.appendChild(wrap2);
 
     container.appendChild(page);
     await new Promise(r => setTimeout(r, 200));
@@ -896,7 +888,6 @@ async function generatePDF() {
   const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
   const pdfBlob = pdf.output('blob');
 
-  // Web Share API（RICOH カンタン入出力対応）
   if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
     try {
       await navigator.share({

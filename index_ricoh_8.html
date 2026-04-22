@@ -418,7 +418,7 @@ function parseQR_A(text) {
       const p1 = partNo.substring(0, 5);
       const p2 = partNo.substring(5, 10);
       const afterQty = text.substring(48).trim();
-      const serialNo = /^[A-Za-z]/.test(afterQty) ? afterQty : null;
+      const serialNo = /^[A-Za-z]/.test(afterQty) ? afterQty.split(/\s+/)[0] : null;
       return { fmt: 'A2', deliveryDateStr, slipNo, partNo, p1, p2,
                totalQty, capacity: totalQty, boxType: '',
                fullBoxes: 1, fraction: 0, serialNo };
@@ -736,7 +736,7 @@ function buildSlipHTML(data, type) {
     </td>
     <td class="biko-r-td">
       トヨタ30番 ・ 端数品<br>
-      シリアル No.${(data.fmt === 'D' || data.fmt === 'A2') && data.serialNo ? `&nbsp;<strong>${data.serialNo}</strong>` : ''}<br>
+      シリアル No.${(data.fmt === 'D' || data.fmt === 'A2') && data.serialNo ? `&nbsp;<strong style="font-size:14pt;">${data.serialNo}</strong>` : ''}<br>
       <span style="font-size:6pt;">(チェックシート転記時に確認)</span>
     </td>
   </tr>
@@ -969,7 +969,19 @@ async function generatePDF() {
   const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
   const pdfBlob = pdf.output('blob');
 
-  if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
+  // PDFをBase64に変換
+  const pdfBase64 = pdf.output('datauristring').split(',')[1];
+
+  // Androidネイティブブリッジ経由で共有（APK版）
+  if (window.AndroidBridge && window.AndroidBridge.sharePDF) {
+    try {
+      window.AndroidBridge.sharePDF(pdfBase64, filename);
+      document.getElementById('status').textContent = '✅ 共有ダイアログを開きました';
+    } catch(e) {
+      document.getElementById('status').textContent = '❌ 共有エラー: ' + e.message;
+    }
+  // ブラウザ版（GitHub Pages）: Web Share API
+  } else if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
     try {
       await navigator.share({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })], title: '指示品依頼書' });
       document.getElementById('status').textContent = '✅ 共有完了！';

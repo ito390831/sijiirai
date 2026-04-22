@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>指示品依頼書システム</title>
+<title>指示品依頼書システム（RICOH版）</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -16,6 +16,11 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .app-title {
   color: #e0e0e0; font-size: 18px; font-weight: bold;
   text-align: center; padding: 12px 0 16px; letter-spacing: 0.05em;
+}
+.app-badge {
+  display: inline-block; background: #f59e0b; color: #1a1a2e;
+  font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px;
+  margin-left: 6px; vertical-align: middle;
 }
 .btn-scan-main {
   width: 100%; padding: 18px;
@@ -56,7 +61,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 .btn-row { display: flex; gap: 8px; margin-top: 12px; }
 .btn-pdf {
   flex: 1; padding: 14px;
-  background: #dc2626; color: #fff;
+  background: #f59e0b; color: #1a1a2e;
   font-size: 15px; font-weight: bold;
   border: none; border-radius: 10px; cursor: pointer;
 }
@@ -107,9 +112,9 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   font-size: 13px; border: none; border-radius: 10px; cursor: pointer;
 }
 
-/* ===== PDF生成コンテナ ===== */
+/* ===== PDF生成コンテナ（RICOH版：794×1123px固定） ===== */
 #pdf-container {
-  position: fixed; left: -9999px; top: 0; background: #fff;
+  position: fixed; left: -9999px; top: 0;
   width: 794px;
 }
 
@@ -141,46 +146,31 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   border-right: 2px solid #1a3a6b;
   line-height: 1.6;
   background: #1a3a6b;
-  color: #ffffff;
+  color: #ffffff; height: 20mm;
 }
-.hdr-title-blank {
-  background: #1a3a6b;
-  border-right: 2px solid #1a3a6b;
-  border-top: none !important;
-  padding: 0;
-}
+.hdr-title-blank { display: none; }
 /* 工程フロー：薄青背景 */
 .flow-row-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 .flow-lbl-td {
-  text-align: center; font-size: 9pt; font-weight: bold;
-  vertical-align: middle;
-  height: 9mm; padding: 1mm 0;
+  text-align: center; font-size: 7pt; font-weight: bold;
+  vertical-align: top; height: 20mm; padding: 0;
   border-bottom: 1.5px solid #4a6fa5;
-  background: #dce8f8;
+  background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px);
   color: #1a3a6b;
 }
-.flow-arr-td {
-  width: 10mm;
-  text-align: center; vertical-align: middle;
-  font-size: 16pt; color: #1a3a6b;
-  border-left: none !important; border-right: none !important;
-  border-bottom: 1.5px solid #4a6fa5;
-  background: #dce8f8;
-  padding: 0; height: 9mm;
+.flow-lbl-inner {
+  display: block; height: 26px; line-height: 26px;
+  font-size: 7pt; font-weight: bold; color: #1a3a6b;
 }
-.flow-stamp-td {
-  text-align: center; vertical-align: middle;
-  height: 12mm; padding: 0;
+.flow-stamp-space {
+  display: block; height: calc(20mm - 26px);
   background: #fafafa;
 }
-.flow-arr-stamp-td {
-  width: 10mm;
-  border-left: none !important; border-right: none !important;
-  height: 12mm;
-  background: #fafafa;
-}
+.flow-arr-td { width: 10mm; text-align: center; vertical-align: top; padding-top: 4px; font-size: 12pt; color: #1a3a6b; border-left: none !important; border-right: none !important; border-bottom: 1.5px solid #4a6fa5; background: linear-gradient(to bottom, #dce8f8 26px, #fafafa 26px); height: 20mm; }
+.flow-stamp-td { display: none; }
+.flow-arr-stamp-td { display: none; }
 
 /* ---- 品番：ラベルグレー・チェック行薄黄 ---- */
 .hinban-label-td {
@@ -217,7 +207,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   color: #666; font-style: italic;
 }
 .cc {
-  width: 11mm; height: 8mm;
+  width: 11mm; height: 9mm;
   text-align: center; vertical-align: middle;
   border: none;
   background: #fffbe6;
@@ -256,7 +246,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 }
 .irai-date-td {
   font-size: 16pt; font-weight: bold; text-align: center;
-  vertical-align: middle; height: 11mm;
+  vertical-align: middle; height: 9mm;
   border-right: 1.5px solid #bbb;
   width: 55mm; color: #111;
 }
@@ -355,16 +345,16 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 /* ---- フッター：濃紺で締める ---- */
 .slip-footer {
   text-align: center; font-size: 11pt; font-weight: bold;
-  padding: 3mm 0; border-top: 2px solid #1a3a6b;
+  padding: 2mm 0; border-top: 2px solid #1a3a6b;
   background: #f5f8ff; color: #1a3a6b; letter-spacing: 0.5px;
 }
 
-/* PDF用ページ：薄グレー背景で伝票を浮かせる（高さ固定でA4統一） */
+/* RICOH版：PDF用ページ 794×1123px固定（A4@96dpi） */
 .pdf-page {
   width: 794px; height: 1123px;
-  padding: 30px 30px; background: #e8edf5;
-  display: flex; flex-direction: column; gap: 18px;
-  overflow: hidden;
+  padding: 20px; background: #e8edf5;
+  display: flex; flex-direction: column; gap: 14px;
+  overflow: hidden; box-sizing: border-box;
 }
 </style>
 </head>
@@ -372,7 +362,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 
 <!-- ===== アプリUI ===== -->
 <div id="app">
-  <div class="app-title">📋 指示品依頼書システム</div>
+  <div class="app-title">📋 指示品依頼書システム<span class="app-badge">RICOH版</span></div>
   <button class="btn-scan-main" id="btn-scan" onclick="toggleScanner()">
     <span id="scan-icon">📷</span>
     <span id="scan-label">QRコードをスキャン開始</span>
@@ -380,7 +370,7 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
   <div id="status">スキャン待機中...</div>
   <div id="slip-list"></div>
   <div class="btn-row" id="action-btns" style="display:none">
-    <button class="btn-pdf" onclick="generatePDF()">📄 PDFを出力</button>
+    <button class="btn-pdf" onclick="generatePDF()">🖨️ RICOHで印刷</button>
     <button class="btn-clear" onclick="clearAll()">🗑️ クリア</button>
   </div>
 </div>
@@ -407,25 +397,46 @@ body { font-family: 'Meiryo', 'MS Gothic', sans-serif; background: #1a1a2e; min-
 <script>
 // ===== QRパース（フォーマット自動判別） =====
 
-// フォーマットA: 既存（344...）
+// フォーマットA / A2: 既存かんばん（344...固定長）
+// A2判別: [29]がスペース → 品番12桁・新フォーマット
+// A判別 : [29]がスペース以外 → 品番10桁・旧フォーマット
 function parseQR_A(text) {
   try {
     const deliveryDate = text.substring(5, 13);
-    const slipNo      = text.substring(15, 22);
-    const partNo      = text.substring(29, 39);
-    const totalQty    = parseInt(text.substring(41, 47), 10);
-    const boxType     = text.substring(47, 52).trim();
-    const capacity    = parseInt(text.substring(52, 57), 10);
-    if (isNaN(totalQty) || isNaN(capacity) || capacity === 0) return null;
-    const m = parseInt(deliveryDate.substring(4,6));
-    const d = parseInt(deliveryDate.substring(6,8));
+    const slipNo       = text.substring(15, 22);
+    if (!/^\d{8}$/.test(deliveryDate)) return null;
+    const m = parseInt(deliveryDate.substring(4, 6));
+    const d = parseInt(deliveryDate.substring(6, 8));
     const deliveryDateStr = `${m}月${d}日`;
-    const p1 = partNo.substring(0, 5);
-    const p2 = partNo.substring(5, 10);
-    const fullBoxes = Math.floor(totalQty / capacity);
-    const fraction  = totalQty % capacity;
-    return { fmt: 'A', deliveryDateStr, slipNo, partNo, p1, p2,
-             totalQty, capacity, boxType, fullBoxes, fraction };
+
+    if (text[22] === ' ') {
+      // ===== フォーマットA2: 品番12桁 =====
+      // [30:42]=品番, [42:48]=納入数, [48:]=シリアルNo.
+      const partNo   = text.substring(30, 42);
+      const totalQty = parseInt(text.substring(42, 48), 10);
+      if (isNaN(totalQty)) return null;
+      const p1 = partNo.substring(0, 5);
+      const p2 = partNo.substring(5, 10);
+      const afterQty = text.substring(48).trim();
+      const serialNo = /^[A-Za-z]/.test(afterQty) ? afterQty.split(/\s+/)[0] : null;
+      return { fmt: 'A2', deliveryDateStr, slipNo, partNo, p1, p2,
+               totalQty, capacity: totalQty, boxType: '',
+               fullBoxes: 1, fraction: 0, serialNo };
+    } else {
+      // ===== フォーマットA: 品番10桁 =====
+      // [29:39]=品番, [41:47]=総納入数, [47:52]=箱種, [52:57]=収容数
+      const partNo   = text.substring(29, 39);
+      const totalQty = parseInt(text.substring(41, 47), 10);
+      const boxType  = text.substring(47, 52).trim();
+      const capacity = parseInt(text.substring(52, 57), 10);
+      if (isNaN(totalQty) || isNaN(capacity) || capacity === 0) return null;
+      const p1 = partNo.substring(0, 5);
+      const p2 = partNo.substring(5, 10);
+      const fullBoxes = Math.floor(totalQty / capacity);
+      const fraction  = totalQty % capacity;
+      return { fmt: 'A', deliveryDateStr, slipNo, partNo, p1, p2,
+               totalQty, capacity, boxType, fullBoxes, fraction, serialNo: null };
+    }
   } catch(e) { return null; }
 }
 
@@ -433,26 +444,21 @@ function parseQR_A(text) {
 // [16:22]=納番, [26:29]=箱連番, [29:42]=品番13桁, [42:50]=納入日, [50:57]=数量
 function parseQR_B(text) {
   try {
-    // スペースが[7:11]と[22:26]にある → 判別キー
     if (text.length < 57) return null;
     if (text.substring(7,11).trim() !== '' || text.substring(22,26).trim() !== '') return null;
     const slipNo      = text.substring(16, 22).trim();
-    const renban      = text.substring(26, 29);          // 箱連番 "001","010"...
-    const partRaw     = text.substring(29, 42);          // 13桁
-    const dateStr     = text.substring(42, 50);          // YYYYMMDD
-    const qty         = parseInt(text.substring(50, 57), 10); // 数量
+    const renban      = text.substring(26, 29);
+    const partRaw     = text.substring(29, 42);
+    const dateStr     = text.substring(42, 50);
+    const qty         = parseInt(text.substring(50, 57), 10);
     if (isNaN(qty) || !/^\d{8}$/.test(dateStr)) return null;
     const m = parseInt(dateStr.substring(4,6));
     const d = parseInt(dateStr.substring(6,8));
     const deliveryDateStr = `${m}月${d}日`;
-    // 品番: prefix(1) + p1(5) + p2(5) + suffix(2) = 13桁
-    // 表示用: p1=先頭6桁(prefix+5), p2=次の5桁
-    // かんばん上の表示に合わせて p1=partRaw[0:6], p2=partRaw[6:11]
     const p1 = partRaw.substring(1, 6);   // "GH999" (先頭1桁=prefix除外)
     const p2 = partRaw.substring(6, 11);  // "02720"
     const suffix = partRaw.substring(11, 13); // "00"
     const partNo = partRaw;
-    // 新フォーマットは1スキャン=1箱。整数箱=qty×1箱、端数なし
     const renbanNum = parseInt(renban, 10);
     return { fmt: 'B', deliveryDateStr, slipNo, renban: renbanNum,
              partRaw, p1, p2, suffix, partNo,
@@ -462,10 +468,12 @@ function parseQR_B(text) {
 }
 
 // フォーマットC: 新フォーマット2（[23:26]が3スペース）
+// [16:23]=納番(7桁), [26:29]=連番, [29:42]=品番13桁, [42:50]=納入日, [50:57]=数量
 function parseQR_C(text) {
   try {
     if (text.length < 57) return null;
-    if (text.substring(23,26) !== '   ') return null;
+    if (text.substring(23,26).trim() !== '') return null;
+    // [7:11]がスペースでないこと（BとCを区別）
     if (text.substring(7,11).trim() === '') return null;
     const slipNo  = text.substring(16, 23).trim();
     const renban  = text.substring(26, 29);
@@ -476,23 +484,102 @@ function parseQR_C(text) {
     const m = parseInt(dateStr.substring(4,6));
     const d = parseInt(dateStr.substring(6,8));
     const deliveryDateStr = `${m}月${d}日`;
-    const p1 = partRaw.substring(1, 6);
+    const p1 = partRaw.substring(1, 6);   // prefix(1桁)除外
     const p2 = partRaw.substring(6, 11);
     const suffix = partRaw.substring(11, 13);
+    const partNo = partRaw;
     const renbanNumC = parseInt(renban, 10);
     return { fmt: 'C', deliveryDateStr, slipNo, renban: renbanNumC,
-             partRaw, p1, p2, suffix, partNo: partRaw,
+             partRaw, p1, p2, suffix, partNo,
              totalQty: qty * renbanNumC, capacity: qty, boxType: '',
              fullBoxes: renbanNumC, fraction: 0 };
   } catch(e) { return null; }
 }
 
+// フォーマットD: 3442スペース区切り
+// サンプル①: 3442 1 20260515 00 G485479 4E0    904670801100 000050 01024644 001001
+//   トークン: [0]=3442 [1]=1 [2]=納期 [3]=00 [4]=納番 [5]=コード1 ([6]=品番 or [6]=コード2 [7]=品番) [?]=納入数6桁
+// サンプル②: 3442 1 20260415 00 W414426 4C2 N766 77AE26202000 000001 MYP91  2545730
+//   コードが2つあるときは tokens[6]=コード2, tokens[7]=品番, tokens[8]=納入数
+//   シリアルNo.はtokens[9]以降（アルファベットから始まる場合）
+function parseQR_D(text) {
+  try {
+    const tokens = text.trim().split(/\s+/);
+    if (tokens.length < 8) return null;
+    if (tokens[0] !== '3442') return null;
+
+    const deliveryDateRaw = tokens[2]; // YYYYMMDD
+    if (!/^\d{8}$/.test(deliveryDateRaw)) return null;
+    const m = parseInt(deliveryDateRaw.substring(4, 6));
+    const d = parseInt(deliveryDateRaw.substring(6, 8));
+    const deliveryDateStr = `${m}月${d}日`;
+
+    const slipNo = tokens[4]; // 納番
+
+    // コードが1つか2つかで品番・納入数の位置が変わる
+    // 品番は12桁の数字・英数字、納入数は6桁のゼロパディング数字で判別
+    let partRaw, qtyRaw, serialNo;
+    const isQty = (s) => /^\d{6}$/.test(s);
+
+    if (tokens.length >= 9 && isQty(tokens[8])) {
+      // コード2つ: tokens[5]=コード1, tokens[6]=コード2, tokens[7]=品番, tokens[8]=納入数
+      partRaw = tokens[7];
+      qtyRaw  = tokens[8];
+      // tokens[9]以降でアルファベット始まりがあればシリアルNo.
+      if (tokens.length >= 10 && /^[A-Za-z]/.test(tokens[9])) {
+        serialNo = tokens.slice(9).join(' ');
+      }
+    } else if (isQty(tokens[7])) {
+      // コード1つ: tokens[5]=コード1, tokens[6]=品番, tokens[7]=納入数
+      partRaw = tokens[6];
+      qtyRaw  = tokens[7];
+    } else {
+      return null;
+    }
+
+    const qty = parseInt(qtyRaw, 10);
+    if (isNaN(qty)) return null;
+
+    // 品番を5桁-5桁+残りに分割（12桁なら前5-後5+残2、それ以外はそのまま分割）
+    let p1, p2;
+    if (partRaw.length >= 10) {
+      p1 = partRaw.substring(0, 5);
+      p2 = partRaw.substring(5, 10);
+    } else {
+      const half = Math.ceil(partRaw.length / 2);
+      p1 = partRaw.substring(0, half);
+      p2 = partRaw.substring(half);
+    }
+
+    return {
+      fmt: 'D',
+      deliveryDateStr,
+      slipNo,
+      partRaw,
+      p1, p2,
+      totalQty: qty,
+      capacity: qty,
+      boxType: '',
+      fullBoxes: 1,
+      fraction: 0,
+      serialNo: serialNo || null
+    };
+  } catch(e) { return null; }
+}
+
 function parseQR(text) {
+  // フォーマットD: 先頭が "3442 " のスペース区切り形式
+  if (text.startsWith('3442 ')) {
+    const d = parseQR_D(text);
+    if (d) return d;
+  }
   if (text.length >= 57) {
+    // フォーマットB: [7:11]と[22:26]が4スペース
     if (text.substring(7,11) === '    ' && text.substring(22,26) === '    ') {
       const b = parseQR_B(text);
       if (b) return b;
     }
+    // フォーマットC: [23:26]が3スペース、[7:11]は数字
     if (text.substring(23,26) === '   ' && text.substring(7,11).trim() !== '') {
       const c = parseQR_C(text);
       if (c) return c;
@@ -508,11 +595,19 @@ function buildSlipHTML(data, type) {
   let qty, boxCount;
   if (data.fmt === 'B' || data.fmt === 'C') {
     qty = data.capacity; boxCount = data.fullBoxes;
+  } else if (data.fmt === 'D' || data.fmt === 'A2') {
+    qty = data.capacity; boxCount = 1;
   } else if (type === 'full') {
     qty = data.capacity; boxCount = data.fullBoxes;
   } else {
     qty = data.fraction; boxCount = 1;
   }
+
+  // ヘッダータイトル
+  let titleLabel;
+  if (data.fmt === 'B' || data.fmt === 'C') titleLabel = 'かんばん';
+  else if (data.fmt === 'D' || data.fmt === 'A2') titleLabel = '指示品';
+  else titleLabel = type === 'full' ? '整数箱' : '端数箱';
 
   const d1 = data.p1.split('');
   const d2 = data.p2.split('');
@@ -528,7 +623,7 @@ function buildSlipHTML(data, type) {
 <table>
   <colgroup><col style="width:42mm"><col></colgroup>
   <tr>
-    <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${(data.fmt === 'B' || data.fmt === 'C') ? 'かんばん' : (type === 'full' ? '整数箱' : '端数箱')}】</td>
+    <td class="hdr-title" style="border-bottom:1px solid #000;">指示品依頼書<br>【${titleLabel}】</td>
     <td style="padding:0; border-bottom:1px solid #000;">
       <table class="flow-row-table">
         <colgroup>
@@ -536,15 +631,11 @@ function buildSlipHTML(data, type) {
           <col><col style="width:8mm"><col><col style="width:8mm"><col>
         </colgroup>
         <tr>
-          <td class="flow-lbl-td">依頼者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">監督者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">作業者</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td">監督者<br>(品確)</td>
-          <td class="flow-arr-td">➡</td>
-          <td class="flow-lbl-td" style="border-right:none;">最終確認<br>(日程G)</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">依頼者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">作業者</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td"><span class="flow-lbl-inner">監督者<br>(品確)</span><span class="flow-stamp-space"></span></td><td class="flow-arr-td">➡</td>
+          <td class="flow-lbl-td" style="border-right:none;"><span class="flow-lbl-inner">最終確認<br>(日程G)</span><span class="flow-stamp-space"></span></td>
         </tr>
       </table>
     </td>
@@ -630,14 +721,14 @@ function buildSlipHTML(data, type) {
       <span class="qty-num">${qty.toLocaleString()}個</span>&nbsp;×&nbsp;${boxCount}箱
     </td>
     <td class="stamp-td">
-      <table>
+      <table style="width:100%;border-collapse:collapse;height:100%;">
+        <colgroup><col style="width:33.3%"><col style="width:33.3%"><col style="width:33.4%"></colgroup>
         <tr>
-          <td class="stamp-lbl-cell" style="border-right:1px solid #000;">数量<br>チェック</td>
+          <td class="stamp-lbl-cell" rowspan="2" style="border-right:1px solid #000;vertical-align:middle;">数量<br>チェック</td>
           <td class="stamp-lbl-cell" style="border-right:1px solid #000;">作業者</td>
           <td class="stamp-lbl-cell" style="border-right:none;">監督者</td>
         </tr>
         <tr>
-          <td class="stamp-box-cell" style="border-right:1px solid #000;"></td>
           <td class="stamp-box-cell" style="border-right:1px solid #000;"></td>
           <td class="stamp-box-cell" style="border-right:none;"></td>
         </tr>
@@ -645,7 +736,7 @@ function buildSlipHTML(data, type) {
     </td>
     <td class="biko-r-td">
       トヨタ30番 ・ 端数品<br>
-      シリアル No.<br>
+      シリアル No.${(data.fmt === 'D' || data.fmt === 'A2') && data.serialNo ? `&nbsp;<strong style="font-size:14pt;">${data.serialNo}</strong>` : ''}<br>
       <span style="font-size:6pt;">(チェックシート転記時に確認)</span>
     </td>
   </tr>
@@ -699,8 +790,7 @@ let videoStream = null;
 let scanInterval = null;
 
 function addSlips(data) {
-  if (data.fmt === 'B' || data.fmt === 'C') {
-    // 新フォーマット: 1スキャン=1伝票
+  if (data.fmt === 'B' || data.fmt === 'C' || data.fmt === 'D' || data.fmt === 'A2') {
     slips.push({ data, type: 'full' });
   } else {
     if (data.fullBoxes > 0) slips.push({ data, type: 'full' });
@@ -713,16 +803,23 @@ function addSlips(data) {
 function renderSlipList() {
   document.getElementById('slip-list').innerHTML = slips.map((s, i) => {
     const isFull = s.type === 'full';
-    const isB = s.data.fmt === 'B' || s.data.fmt === 'C';
-    const qty = isB ? s.data.capacity * s.data.fullBoxes : (isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction);
-    const badge = isB ? `かんばん${String(s.data.renban).padStart(3,'0')}` : (isFull ? '整数箱' : '端数箱');
-    const badgeCls = isB ? 'kanban' : (isFull ? '' : 'frac');
-    const partDisp = isB ? `${s.data.p1}-${s.data.p2}` : `${s.data.p1}－${s.data.p2}`;
+    const isBC = s.data.fmt === 'B' || s.data.fmt === 'C';
+    const isD  = s.data.fmt === 'D';
+    const isA2 = s.data.fmt === 'A2';
+    const qty = isBC ? s.data.capacity * s.data.fullBoxes
+              : (isD || isA2) ? s.data.capacity
+              : (isFull ? s.data.capacity * s.data.fullBoxes : s.data.fraction);
+    const badge = isBC ? `かんばん${String(s.data.renban).padStart(3,'0')}`
+                : (isD || isA2) ? '指示品'
+                : (isFull ? '整数箱' : '端数箱');
+    const badgeCls = isBC ? 'kanban' : (isD || isA2) ? 'kanban' : (isFull ? '' : 'frac');
+    const partDisp = `${s.data.p1}－${s.data.p2}`;
+    const serialInfo = (isD || isA2) && s.data.serialNo ? `　シリアル：${s.data.serialNo}` : '';
     return `<div class="slip-card">
       <div class="slip-card-badge ${badgeCls}">${badge}</div>
       <div>
         <div class="slip-card-partno">${partDisp}</div>
-        <div class="slip-card-qty">${qty.toLocaleString()}個</div>
+        <div class="slip-card-qty">${qty.toLocaleString()}個${serialInfo}</div>
       </div>
     </div>`;
   }).join('');
@@ -827,67 +924,75 @@ function startScan(video) {
   }, 200);
 }
 
-// ===== PDF生成 =====
+// ===== PDF生成（RICOH版：794×1123px固定 → Web Share API） =====
 async function generatePDF() {
   if (slips.length === 0) { alert('伝票がありません'); return; }
   document.getElementById('status').textContent = 'PDF生成中...';
   const container = document.getElementById('pdf-container');
   container.innerHTML = '';
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [794, 1123] });
 
-  // A4ページ固定: 794×1123px
-  // 4枚/ページ：padding15px上下、gap8px×3 → 1スロット=(1123-30-24)/4=267px
   const PAGE_W = 794, PAGE_H = 1123;
-  const PADDING = 15, GAP = 8, PER_PAGE = 4;
-  const SLIP_SLOT = Math.floor((PAGE_H - PADDING * 2 - GAP * (PER_PAGE - 1)) / PER_PAGE);
-  // 伝票本来幅734px→ページ幅764px(padding除く)に合わせる
-  const SLIP_NATURAL_W = 734;
-  const AVAILABLE_W = PAGE_W - PADDING * 2;
-  const SCALE = Math.min(SLIP_SLOT / 510, AVAILABLE_W / SLIP_NATURAL_W);
+  const PADDING = 20, GAP = 14;
+  const SLOT_H = Math.floor((PAGE_H - PADDING*2 - GAP) / 2); // 534px
 
-  for (let i = 0; i < slips.length; i += PER_PAGE) {
+  for (let i = 0; i < slips.length; i += 2) {
     const page = document.createElement('div');
     page.style.cssText = `width:${PAGE_W}px;height:${PAGE_H}px;padding:${PADDING}px;` +
       `background:#e8edf5;display:flex;flex-direction:column;gap:${GAP}px;` +
       `overflow:hidden;box-sizing:border-box;`;
 
-    for (let j = 0; j < PER_PAGE; j++) {
-      const slot = document.createElement('div');
-      slot.style.cssText = `width:${AVAILABLE_W}px;height:${SLIP_SLOT}px;` +
-        `overflow:hidden;flex-shrink:0;position:relative;`;
+    const wrap1 = document.createElement('div');
+    wrap1.style.cssText = `width:100%;height:${SLOT_H}px;overflow:hidden;flex-shrink:0;`;
+    wrap1.innerHTML = buildSlipHTML(slips[i].data, slips[i].type);
+    page.appendChild(wrap1);
 
-      const inner = document.createElement('div');
-      // transform:scaleで伝票全体を縮小（文字サイズ比率は保持）
-      inner.style.cssText = `transform:scale(${SCALE});transform-origin:top left;` +
-        `position:absolute;top:0;left:0;`;
-
-      if (slips[i + j]) {
-        inner.innerHTML = buildSlipHTML(slips[i + j].data, slips[i + j].type);
-      }
-      slot.appendChild(inner);
-      page.appendChild(slot);
-    }
+    const wrap2 = document.createElement('div');
+    wrap2.style.cssText = `width:100%;height:${SLOT_H}px;overflow:hidden;flex-shrink:0;`;
+    if (slips[i + 1]) wrap2.innerHTML = buildSlipHTML(slips[i+1].data, slips[i+1].type);
+    page.appendChild(wrap2);
 
     container.appendChild(page);
     await new Promise(r => setTimeout(r, 200));
 
     const canvas = await html2canvas(page, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      windowWidth: PAGE_W,
-      width: PAGE_W,
-      height: PAGE_H
+      scale: 2, useCORS: true, logging: false,
+      windowWidth: PAGE_W, width: PAGE_W, height: PAGE_H
     });
-    if (i > 0) pdf.addPage();
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);
+    if (i > 0) pdf.addPage([794, 1123], 'portrait');
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 794, 1123);
     container.innerHTML = '';
   }
 
   const now = new Date();
-  pdf.save(`指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`);
-  document.getElementById('status').textContent = '✅ PDF出力完了！';
+  const filename = `指示品依頼書_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.pdf`;
+  const pdfBlob = pdf.output('blob');
+
+  // PDFをBase64に変換
+  const pdfBase64 = pdf.output('datauristring').split(',')[1];
+
+  // Androidネイティブブリッジ経由で共有（APK版）
+  if (window.AndroidBridge && window.AndroidBridge.sharePDF) {
+    try {
+      window.AndroidBridge.sharePDF(pdfBase64, filename);
+      document.getElementById('status').textContent = '✅ 共有ダイアログを開きました';
+    } catch(e) {
+      document.getElementById('status').textContent = '❌ 共有エラー: ' + e.message;
+    }
+  // ブラウザ版（GitHub Pages）: Web Share API
+  } else if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] })) {
+    try {
+      await navigator.share({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })], title: '指示品依頼書' });
+      document.getElementById('status').textContent = '✅ 共有完了！';
+    } catch(e) {
+      if (e.name !== 'AbortError') { pdf.save(filename); document.getElementById('status').textContent = '✅ PDF保存完了！'; }
+      else { document.getElementById('status').textContent = '共有をキャンセルしました。'; }
+    }
+  } else {
+    pdf.save(filename);
+    document.getElementById('status').textContent = '✅ PDF出力完了！';
+  }
 }
 </script>
 </body>
